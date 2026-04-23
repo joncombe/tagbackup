@@ -1,0 +1,57 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: tagbackup
+    main: ./cmd/tagbackup
+    binary: tagbackup
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/joncombe/tagbackup/internal/cli.version={{.Version}}
+
+archives:
+  - id: default
+    name_template: >-
+      tagbackup_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README*
+      - LICENSE*
+      - docs/*
+
+checksum:
+  name_template: tagbackup_{{ .Version }}_checksums.txt
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: Features
+      regexp: "^.*feat(\\(.+\\))?:"
+      order: 0
+    - title: Fixes
+      regexp: "^.*fix(\\(.+\\))?:"
+      order: 1
+    - title: Other
+      order: 999
+
+release:
+  draft: false
+  prerelease: auto

@@ -1,0 +1,7 @@
+# Built binary
+/tagbackup
+tagbackup
+*.exe
+
+# GoReleaser output
+dist/
