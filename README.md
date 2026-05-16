@@ -7,13 +7,13 @@ Command-line tool to upload, download, list, and delete files in S3-compatible s
 **Linux and macOS** — run the install script:
 
 ```sh
-curl -sfL https://raw.githubusercontent.com/joncombe/tagbackup/main/install.sh | sh
+curl -sfL https://tagbackup.com/install.sh | sh
 ```
 
 Or with `wget`:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/joncombe/tagbackup/main/install.sh | sh
+wget -qO- https://tagbackup.com/install.sh | sh
 ```
 
 The script detects your OS and architecture, downloads the right binary from the [Releases](https://github.com/joncombe/tagbackup/releases) page, and installs it to `/usr/local/bin` (or `~/.local/bin` if that isn't writable).
@@ -24,13 +24,13 @@ The script detects your OS and architecture, downloads the right binary from the
 
 ```sh
 # Install a specific version
-VERSION=v0.0.3 curl -sfL https://raw.githubusercontent.com/joncombe/tagbackup/main/install.sh | sh
+VERSION=v0.0.3 curl -sfL https://tagbackup.com/install.sh | sh
 
 # Install to a custom directory
-INSTALL_DIR=~/bin curl -sfL https://raw.githubusercontent.com/joncombe/tagbackup/main/install.sh | sh
+INSTALL_DIR=~/bin curl -sfL https://tagbackup.com/install.sh | sh
 
 # Install to a system directory (requires sudo)
-curl -sfL https://raw.githubusercontent.com/joncombe/tagbackup/main/install.sh | sudo sh
+curl -sfL https://tagbackup.com/install.sh | sudo sh
 ```
 
 ## Install from source
