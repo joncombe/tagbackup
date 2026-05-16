@@ -90,6 +90,14 @@ When `--output` is not given, the file is downloaded to the current working dire
 
 This command is non-interactive.
 
+- `tagbackup tags --bucket=mybucket` - list every tag that appears across all objects in the bucket. For each tag, display:
+  - the tag name
+  - the number of files carrying that tag
+  - the datetime of the oldest file with that tag (derived from the embedded timestamp)
+  - the datetime of the newest file with that tag (derived from the embedded timestamp)
+
+Tags are sorted alphabetically. Output is tabular, non-interactive, and always goes to stdout. If the bucket contains no tagbackup objects, the command exits with code 5 (no matches).
+
 - `tagbackup delete --bucket=mybucket --tag=mytag` - delete all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below), and human readable output and pagination as in `tagbackup pull`. This command has the following optional parameters:
   - `--force` - delete the files without confirming with the user. If this flag is omitted, the user is shown a list of the files which will be deleted and they must confirm which files from that list they want to delete.
   - `--dry-run` - show which files would be deleted but do not delete them. Combine with `--force` for non-interactive previews and with `--json` for machine-readable output. Exits with code 0 even if the matching list is empty.
@@ -116,7 +124,7 @@ These flags can be passed to any command:
 - `--version` - print the tagbackup version and exit.
 - `--help` (`-h`) - print help for the current command and exit.
 
-There is no default bucket. The `--bucket` flag is required for every file command (`push`, `pull`, `files`, `delete`).
+There is no default bucket. The `--bucket` flag is required for every file command (`push`, `pull`, `files`, `tags`, `delete`).
 
 ## Exit codes
 

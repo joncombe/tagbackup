@@ -47,6 +47,7 @@ func newRoot() *cobra.Command {
 		g.cmdPull(),
 		g.cmdFiles(),
 		g.cmdDelete(),
+		g.cmdTags(),
 		g.cmdBucket(),
 	)
 

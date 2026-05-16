@@ -107,7 +107,7 @@ These apply to every subcommand:
 | `--version` | | Print version and exit |
 | `--help` | `-h` | Help for the current command |
 
-There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `files`, and `delete`.
+There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `files`, `tags`, and `delete`.
 
 ## Command overview
 
@@ -121,6 +121,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup push` | Upload one file with tags |
 | `tagbackup pull` | Download one file matching a tag expression |
 | `tagbackup files` | List objects matching a tag expression |
+| `tagbackup tags` | List all tags in the bucket with file counts and date ranges |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
 
 ---
@@ -214,6 +215,18 @@ tagbackup files --bucket=ALIAS --tag=EXPRESSION [--json]
 - `--json`: one JSON object per line on stdout with `key`, `tags`, `size`, `timestamp` (epoch ms from the key). No paging; suitable for scripts.
 
 Non-interactive. Empty match set uses exit code **5**.
+
+---
+
+## `tagbackup tags`
+
+```text
+tagbackup tags --bucket=ALIAS
+```
+
+Lists every tag that appears in at least one object in the bucket. For each tag, shows the tag name, number of files carrying that tag, and the datetime of the oldest and newest file with that tag. Tags are sorted alphabetically. Output is always to stdout; non-interactive.
+
+Empty bucket (no tagbackup objects) uses exit code **5**.
 
 ---
 

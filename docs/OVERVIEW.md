@@ -37,7 +37,7 @@ The Go module path is `github.com/joncombe/tagbackup`. The compiled binary is na
 
 The CLI follows two consistent patterns, mirroring `git`:
 
-- **Top-level verbs** for the common, frequently-used actions: `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup delete`.
+- **Top-level verbs** for the common, frequently-used actions: `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, `tagbackup delete`.
 - **Noun-then-verb subcommands** for managing configuration objects: `tagbackup bucket add|edit|delete|list|verify`.
 
 New commands introduced after v1 should follow the same convention: a top-level verb if it is a hot-path action operating on files, or `tagbackup <noun> <verb>` if it manages a longer-lived configuration object.

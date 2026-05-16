@@ -26,7 +26,7 @@ Prebuilt binaries for common platforms may be published on the [Releases](https:
 
 1. Create a `config.yaml` in the current directory (or set `TAGBACKUP_CONFIG` to its path). See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full format.
 2. Add at least one bucket under `buckets:` with an alias, `endpoint`, `region`, `bucket` name, and credentials.
-3. Run commands such as `tagbackup push`, `tagbackup pull`, `tagbackup files`, and `tagbackup delete` — see [docs/USAGE.md](docs/USAGE.md) for usage and [docs/FUNCTIONALITY.md](docs/FUNCTIONALITY.md) for the full specification.
+3. Run commands such as `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, and `tagbackup delete` — see [docs/USAGE.md](docs/USAGE.md) for usage and [docs/FUNCTIONALITY.md](docs/FUNCTIONALITY.md) for the full specification.
 
 ```sh
 ./tagbackup --help
