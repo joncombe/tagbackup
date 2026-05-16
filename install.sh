@@ -44,8 +44,10 @@ if [ -z "${VERSION}" ]; then
   fi
 fi
 
-# Construct download URL
-FILENAME="${BINARY}_${VERSION}_${OS}_${ARCH}.tar.gz"
+# Construct download URL (VERSION may have a leading "v" from the git tag, but
+# GoReleaser strips it from archive filenames via {{ .Version }})
+VERSION_BARE="${VERSION#v}"
+FILENAME="${BINARY}_${VERSION_BARE}_${OS}_${ARCH}.tar.gz"
 URL="https://github.com/${REPO}/releases/download/${VERSION}/${FILENAME}"
 
 # Determine install directory
@@ -76,12 +78,26 @@ trap 'rm -rf "${TMP}"' EXIT
 echo "Downloading ${BINARY} ${VERSION} (${OS}/${ARCH})..."
 
 if command -v curl >/dev/null 2>&1; then
-  curl -sfL "${URL}" -o "${TMP}/${FILENAME}"
+  curl -fL --progress-bar "${URL}" -o "${TMP}/${FILENAME}" || {
+    echo "error: download failed: ${URL}" >&2
+    exit 1
+  }
 else
-  wget -qO "${TMP}/${FILENAME}" "${URL}"
+  wget -O "${TMP}/${FILENAME}" "${URL}" || {
+    echo "error: download failed: ${URL}" >&2
+    exit 1
+  }
 fi
 
-tar -xzf "${TMP}/${FILENAME}" -C "${TMP}"
+if [ ! -s "${TMP}/${FILENAME}" ]; then
+  echo "error: downloaded file is empty: ${URL}" >&2
+  exit 1
+fi
+
+tar -xzf "${TMP}/${FILENAME}" -C "${TMP}" || {
+  echo "error: failed to extract archive" >&2
+  exit 1
+}
 install -m 755 "${TMP}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
 
 echo "${BINARY} ${VERSION} installed to ${INSTALL_DIR}/${BINARY}"
