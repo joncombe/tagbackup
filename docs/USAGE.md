@@ -107,7 +107,7 @@ These apply to every subcommand:
 | `--version` | | Print version and exit |
 | `--help` | `-h` | Help for the current command |
 
-There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `list`, and `delete`.
+There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `files`, and `delete`.
 
 ## Command overview
 
@@ -120,7 +120,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup bucket delete` | Remove a bucket entry from the config (does not delete the remote bucket) |
 | `tagbackup push` | Upload one file with tags |
 | `tagbackup pull` | Download one file matching a tag expression |
-| `tagbackup list` | List objects matching a tag expression |
+| `tagbackup files` | List objects matching a tag expression |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
 
 ---
@@ -205,10 +205,10 @@ If no object matches, exit code **5** (no matches).
 
 ---
 
-## `tagbackup list`
+## `tagbackup files`
 
 ```text
-tagbackup list --bucket=ALIAS --tag=EXPRESSION [--json]
+tagbackup files --bucket=ALIAS --tag=EXPRESSION [--json]
 ```
 
 - `--json`: one JSON object per line on stdout with `key`, `tags`, `size`, `timestamp` (epoch ms from the key). No paging; suitable for scripts.
@@ -227,14 +227,14 @@ tagbackup delete --bucket=ALIAS --tag=EXPRESSION [options]
 | ---- | ---- |
 | `--force` | Delete all matches without confirmation |
 | `--dry-run` | Show what would be deleted; no deletion |
-| `--json` | Machine-readable lines (same shape as `list --json`); in dry-run, lines are “would delete” |
+| `--json` | Machine-readable lines (same shape as `files --json`); in dry-run, lines are “would delete” |
 | `--newer-than=DUR` | Only objects **strictly newer** than *now* minus the duration (e.g. `2d`) |
 | `--older-than=DUR` | Only objects **strictly older** than *now* minus the duration (e.g. `30d`) |
 
 Use **either** `--newer-than` or `--older-than`, not both. Duration is an integer plus a unit: `s`, `m`, `h`, `d`, `w` (see [FUNCTIONALITY.md](FUNCTIONALITY.md#managing-files) for boundary rules).
 
 - **Without** `--force`: you get an interactive multi-select of candidates **unless** `--dry-run` (preview only) or you use `--non-interactive` — then you must use `--force` or `--dry-run`.
-- **With** `--json`, output is the same field set as `list --json` for each deleted (or would-delete) object.
+- **With** `--json`, output is the same field set as `files --json` for each deleted (or would-delete) object.
 
 Non-interactive automation typically uses:  
 `--force` or `--dry-run`, and often `--older-than=…` for retention.
@@ -243,7 +243,7 @@ Non-interactive automation typically uses:
 
 ## Tag expressions
 
-Used with `pull`, `list`, and `delete` for `--tag`:
+Used with `pull`, `files`, and `delete` for `--tag`:
 
 | Token | Meaning |
 | ----- | ------- |
@@ -268,8 +268,8 @@ There are no wildcards or regex; only the operators above.
 
 ## How output is split
 
-- **stdout** — Data you might pipe: file body (`pull --output=-`), `list` / `list --json`, `delete --json` lines.
-- **stderr** — Progress, logs, errors, hints, interactive prompts. Piping `list` to `grep` is safe: noise stays on stderr.
+- **stdout** — Data you might pipe: file body (`pull --output=-`), `files` / `files --json`, `delete --json` lines.
+- **stderr** — Progress, logs, errors, hints, interactive prompts. Piping `files` to `grep` is safe: noise stays on stderr.
 
 ## Exit codes (summary)
 
@@ -310,7 +310,7 @@ tagbackup pull --bucket=dbbackup --tag=nightly+prod --latest --output=- | psql m
 **Scripted listing:**
 
 ```sh
-tagbackup list --bucket=dbbackup --tag=prod --json | jq -r .key
+tagbackup files --bucket=dbbackup --tag=prod --json | jq -r .key
 ```
 
 For bucket wiring (endpoints, R2 path normalization, env credentials), see [CONFIGURATION.md](CONFIGURATION.md). For the full normative spec, [FUNCTIONALITY.md](FUNCTIONALITY.md) remains the reference.

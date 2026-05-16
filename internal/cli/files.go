@@ -12,33 +12,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type listJSON struct {
+type filesJSON struct {
 	Key       string   `json:"key"`
 	Tags      []string `json:"tags"`
 	Size      int64    `json:"size"`
-	Timestamp int64    `json:"timestamp"` // epoch ms from filename
+	Timestamp int64    `json:"timestamp"`
 }
 
-func (g *Runtime) cmdList() *cobra.Command {
+func (g *Runtime) cmdFiles() *cobra.Command {
 	var bucket, tagExpr string
 	var asJSON bool
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   "files",
 		Short: "List files in the bucket matching a tag expression",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return g.runList(bucket, tagExpr, asJSON)
+			return g.runFiles(bucket, tagExpr, asJSON)
 		},
 	}
 	cmd.Flags().StringVar(&bucket, "bucket", "", "bucket alias (required)")
 	cmd.Flags().StringVar(&tagExpr, "tag", "", "tag expression (required)")
-	cmd.Flags().BoolVar(&asJSON, "json", false, "one JSON object per line")
+	cmd.Flags().BoolVar(&asJSON, "json", false, "output one JSON object per line")
 	_ = cmd.MarkFlagRequired("bucket")
 	_ = cmd.MarkFlagRequired("tag")
 	return cmd
 }
 
-func (g *Runtime) runList(bucket, tagExpr string, asJSON bool) error {
-	const name = "list"
+func (g *Runtime) runFiles(bucket, tagExpr string, asJSON bool) error {
+	const name = "files"
 	ev, err := store.ParseTagExpr(tagExpr)
 	if err != nil {
 		return exitUsageErr(name, err)
@@ -60,28 +60,29 @@ func (g *Runtime) runList(bucket, tagExpr string, asJSON bool) error {
 		return exitS3(name, err)
 	}
 	if len(objs) == 0 {
-		return exitNoMatches(name, "no matching files")
+		return exitNoMatches(name, "no files found")
 	}
 	sort.Slice(objs, func(i, j int) bool { return objs[i].Parsed.Timestamp > objs[j].Parsed.Timestamp })
 
 	if asJSON {
 		enc := json.NewEncoder(os.Stdout)
 		for _, o := range objs {
-			line := listJSON{
+			line := filesJSON{
 				Key:       o.Key,
 				Tags:      o.Parsed.Tags,
 				Size:      o.Size,
 				Timestamp: o.Parsed.Timestamp,
 			}
-			if e := enc.Encode(&line); e != nil {
-				return exitErr(name, e)
+			if err := enc.Encode(line); err != nil {
+				return exitErr(name, err)
 			}
 		}
 		return nil
 	}
+
 	for _, o := range objs {
-		t := time.UnixMilli(o.Parsed.Timestamp).UTC()
-		_, _ = fmt.Fprintf(os.Stdout, "%s  %10s  %s  %s\n", t.Format(time.RFC3339), humanBytes(o.Size), o.Parsed.DisplayName, o.Parsed.RawTags)
+		ts := time.UnixMilli(o.Parsed.Timestamp).UTC().Format("2006-01-02 15:04:05Z")
+		fmt.Printf("%s  %10s  %s  [%s]\n", ts, humanBytes(o.Size), o.Parsed.DisplayName, o.Parsed.RawTags)
 	}
 	return nil
 }

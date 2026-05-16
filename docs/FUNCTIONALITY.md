@@ -32,7 +32,7 @@ When all flags required for the chosen credential type are present, the command 
 
 The list step is run as its own check so that the common IAM mistake of granting `s3:GetObject` without `s3:ListBucket` is detected. Show errors in red (subject to the global `--no-color` rule and TTY detection), with a friendly pointer of what to do, e.g. "check your read permissions on this bucket." A failed verify run must not be destructive: it is perfectly possible that the user may have intentionally NOT granted one of the permissions, e.g. a server that only pushes files, or a developer laptop that only pulls them.
 
-The probe object used by the write/read/delete steps is named `<prefix>.tagbackup-permission-check-<short-random>`, where `<prefix>` is the bucket entry's configured key prefix (or empty if none) and `<short-random>` is a freshly-generated 8-character hex string. The leading dot keeps it out of normal `tagbackup list` output (which only matches the documented `<timestamp>-<tags>-<filename>` shape).
+The probe object used by the write/read/delete steps is named `<prefix>.tagbackup-permission-check-<short-random>`, where `<prefix>` is the bucket entry's configured key prefix (or empty if none) and `<short-random>` is a freshly-generated 8-character hex string. The leading dot keeps it out of normal `tagbackup files` output (which only matches the documented `<timestamp>-<tags>-<filename>` shape).
 
 Cleanup is best-effort: tagbackup attempts to delete the probe object when the verify run finishes (whether earlier steps passed or failed). If the delete step itself fails or was never reached because of a permission denial earlier in the sequence, tagbackup prints a warning identifying the residue object key so the operator can remove it by hand.
 
@@ -85,7 +85,7 @@ Display the download progress and a success or fail message on completion (subje
 
 When `--output` is not given, the file is downloaded to the current working directory using the original filename. In the case of a name collision the downloaded file overwrites the existing file. The download is written to a temporary file and atomically renamed on success, so an interrupted download never leaves a half-written file in place.
 
-- `tagbackup list --bucket=mybucket --tag=mytag` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below), and output human readable output and pagination as in `tagbackup pull`.
+- `tagbackup files --bucket=mybucket --tag=mytag` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below), and output human readable output and pagination as in `tagbackup pull`.
   - `--json` (optional) - emit machine-readable output to stdout, one JSON object per line with `key`, `tags` (an array of strings), `size` (bytes), and `timestamp` (the 13-digit epoch-ms value embedded in the filename). Disables pagination and any interactive prompts; suitable for scripting.
 
 This command is non-interactive.
@@ -93,7 +93,7 @@ This command is non-interactive.
 - `tagbackup delete --bucket=mybucket --tag=mytag` - delete all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below), and human readable output and pagination as in `tagbackup pull`. This command has the following optional parameters:
   - `--force` - delete the files without confirming with the user. If this flag is omitted, the user is shown a list of the files which will be deleted and they must confirm which files from that list they want to delete.
   - `--dry-run` - show which files would be deleted but do not delete them. Combine with `--force` for non-interactive previews and with `--json` for machine-readable output. Exits with code 0 even if the matching list is empty.
-  - `--json` - emit machine-readable output to stdout, one JSON object per line for each file deleted (or, under `--dry-run`, for each file that would be deleted). Same field shape as `tagbackup list --json`.
+  - `--json` - emit machine-readable output to stdout, one JSON object per line for each file deleted (or, under `--dry-run`, for each file that would be deleted). Same field shape as `tagbackup files --json`.
   - `--newer-than` - delete all files that match the above rules and have a UTC timestamp younger than the provided value. The provided value must be an integer immediately followed by a character, e.g. `--newer-than=2d` deletes files newer than 2 days ago, computed from now in UTC. Character options are `s` for seconds, `m` for minutes, `h` for hours, `d` for days and `w` for weeks. The boundary is strictly less-than: a file with a timestamp exactly 2 days old is not matched by `--newer-than=2d`.
   - `--older-than` - the same as `--newer-than` but deletes files older than the provided value, with the same strictly-greater-than boundary.
   - the user can only use one of `--newer-than` or `--older-than`, not both.
@@ -116,7 +116,7 @@ These flags can be passed to any command:
 - `--version` - print the tagbackup version and exit.
 - `--help` (`-h`) - print help for the current command and exit.
 
-There is no default bucket. The `--bucket` flag is required for every file command (`push`, `pull`, `list`, `delete`).
+There is no default bucket. The `--bucket` flag is required for every file command (`push`, `pull`, `files`, `delete`).
 
 ## Exit codes
 
@@ -133,8 +133,8 @@ There is no default bucket. The `--bucket` flag is required for every file comma
 
 ## Output channels
 
-- **stdout** carries data only: the file body for `pull --output=-`, the listing for `list`, the JSON payload for `--json`. Anything you might want to pipe into another command goes here.
-- **stderr** carries everything else: progress bars, log messages, prompts, error messages, hints. This means `tagbackup list --bucket=x --tag=y | grep foo` works correctly even when progress output is on.
+- **stdout** carries data only: the file body for `pull --output=-`, the listing for `files`, the JSON payload for `--json`. Anything you might want to pipe into another command goes here.
+- **stderr** carries everything else: progress bars, log messages, prompts, error messages, hints. This means `tagbackup files --bucket=x --tag=y | grep foo` works correctly even when progress output is on.
 
 ## TTY detection
 
@@ -154,11 +154,11 @@ Network and S3 calls use the AWS SDK's default retry behaviour (currently up to 
 
 ## Bucket scanning
 
-Every command that operates on existing files (`pull`, `list`, `delete`) issues `ListObjectsV2` calls against the bucket, scoped to the configured `prefix:` (or the whole bucket if no prefix is set). The AWS SDK paginator returns objects 1000 at a time; tagbackup iterates until the bucket is exhausted, parses each key against the `<timestamp>-<tags>-<filename>` format (silently skipping non-conforming keys, or logging each at DEBUG when `--verbose` is set), evaluates the supplied tag expression, and buffers the matched set in memory. For `pull --latest` only the maximum-by-timestamp match is retained. Per-match memory cost is a few hundred bytes (key, parsed tags, size, timestamp), so even buckets with hundreds of thousands of matches are comfortably handled.
+Every command that operates on existing files (`pull`, `files`, `delete`) issues `ListObjectsV2` calls against the bucket, scoped to the configured `prefix:` (or the whole bucket if no prefix is set). The AWS SDK paginator returns objects 1000 at a time; tagbackup iterates until the bucket is exhausted, parses each key against the `<timestamp>-<tags>-<filename>` format (silently skipping non-conforming keys, or logging each at DEBUG when `--verbose` is set), evaluates the supplied tag expression, and buffers the matched set in memory. For `pull --latest` only the maximum-by-timestamp match is retained. Per-match memory cost is a few hundred bytes (key, parsed tags, size, timestamp), so even buckets with hundreds of thousands of matches are comfortably handled.
 
 ## Display pagination
 
-The interactive selector used by `pull` when `--latest` is omitted, and the confirmation list shown by `delete` when `--force` is omitted, page through the matched set 20 entries at a time using survey/v2's built-in scrolling controls. The non-interactive `tagbackup list` command prints all matches in one go without paging — pipe through `less` (or any other pager) if you want one — and `--json` output always streams without paging, one JSON object per line.
+The interactive selector used by `pull` when `--latest` is omitted, and the confirmation list shown by `delete` when `--force` is omitted, page through the matched set 20 entries at a time using survey/v2's built-in scrolling controls. The non-interactive `tagbackup files` command prints all matches in one go without paging — pipe through `less` (or any other pager) if you want one — and `--json` output always streams without paging, one JSON object per line.
 
 ## Logging
 
@@ -170,7 +170,7 @@ Global flags (`--config`, `--verbose`, `--quiet`, `--non-interactive`, `--no-col
 
 # Tag grammar
 
-When using the `tagbackup pull`, `tagbackup list` and `tagbackup delete` commands, the user can make rules with one or more tags:
+When using the `tagbackup pull`, `tagbackup files` and `tagbackup delete` commands, the user can make rules with one or more tags:
 
 - `|` = OR, `+` = AND, `-` = NOT (unary), `()` = grouping.
 - Precedence `()` > `-` > `+` > `|`
@@ -201,7 +201,7 @@ v1 supports only the operators listed above. There are no wildcards, no regex, a
 # Notes
 
 - Always use the timestamp in the filename, and not any S3 meta information such as `LastModified`.
-- The human-readable datetime shown by `tagbackup list` (and the interactive picker in `tagbackup pull` when `--latest` is omitted) is derived from the embedded filename timestamp, not from S3 `LastModified`.
+- The human-readable datetime shown by `tagbackup files` (and the interactive picker in `tagbackup pull` when `--latest` is omitted) is derived from the embedded filename timestamp, not from S3 `LastModified`.
 - tagbackup should ignore all files in the bucket that do not match its own naming convention.
 
 # Handling errors
@@ -211,7 +211,7 @@ All error messages are formatted as `tagbackup: <command>: <message>` on stderr,
 The following conditions are explicitly surfaced as friendly errors:
 
 - the syntax of a command is invalid (exit code 2)
-- required parameters are missing, e.g. `--bucket` or `--tag` with `pull`, `push`, `list` or `delete` (exit code 2)
+- required parameters are missing, e.g. `--bucket` or `--tag` with `pull`, `push`, `files` or `delete` (exit code 2)
 - the tag expression is malformed under the [Tag grammar](#tag-grammar) rules (exit code 2)
 - the configuration file is missing, unreadable, or names an unknown bucket alias (exit code 3)
 - the bucket credentials do not work (exit code 4)
