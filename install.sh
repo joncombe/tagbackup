@@ -101,3 +101,19 @@ tar -xzf "${TMP}/${FILENAME}" -C "${TMP}" || {
 install -m 755 "${TMP}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
 
 echo "${BINARY} ${VERSION} installed to ${INSTALL_DIR}/${BINARY}"
+
+# Warn if the install directory is not in PATH
+case ":${PATH}:" in
+  *":${INSTALL_DIR}:"*) ;;
+  *)
+    echo ""
+    echo "NOTE: ${INSTALL_DIR} is not in your PATH."
+    echo "Add it by running:"
+    echo ""
+    echo "  echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.zshrc && source ~/.zshrc"
+    echo ""
+    echo "Or for bash:"
+    echo ""
+    echo "  echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc && source ~/.bashrc"
+    ;;
+esac

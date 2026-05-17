@@ -4,7 +4,7 @@ Command-line tool to upload, download, list, and delete files in S3-compatible s
 
 ## Install
 
-**Linux and macOS** — run the install script:
+**Linux and macOS 12+** — run the install script:
 
 ```sh
 curl -sfL https://tagbackup.com/install.sh | sh
