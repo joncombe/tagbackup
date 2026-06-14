@@ -51,6 +51,19 @@ go build -o tagbackup ./cmd/tagbackup
 
 Or use the Makefile: `make build` (or `make run` to build and run).
 
+## Build a new version
+
+Releases are tag-driven — there is no version number in source. Tag the commit you want to release and push it:
+
+```sh
+git tag v0.0.5
+git push origin v0.0.5
+```
+
+That triggers the GitHub Actions release workflow, which runs GoReleaser to build binaries for all platforms and publish them to [Releases](https://github.com/joncombe/tagbackup/releases).
+
+To dry-run locally before tagging, run `make release-check` (validate config) or `make release-snapshot` (build into `dist/` without publishing).
+
 ## Quick start
 
 1. Create a `config.yaml` in the current directory (or set `TAGBACKUP_CONFIG` to its path). See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full format.
