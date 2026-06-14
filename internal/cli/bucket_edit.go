@@ -81,8 +81,8 @@ func (g *Runtime) runBucketEdit(c *cobra.Command, from string, f *bucketAddFl) e
 		if from != "" {
 			oldAlias = from
 		} else {
-			if e := survey.AskOne(&survey.Select{Message: "Bucket to edit", Options: aliases}, &oldAlias, survey.WithValidator(survey.Required)); e != nil {
-				return e
+			if err := askOne(&survey.Select{Message: "Bucket to edit", Options: aliases}, &oldAlias, survey.WithValidator(survey.Required)); err != nil {
+				return err
 			}
 		}
 	}
@@ -140,21 +140,43 @@ func (g *Runtime) runBucketEdit(c *cobra.Command, from string, f *bucketAddFl) e
 			Insecure:       cur.InsecureSkipVerify,
 			NoTest:         true,
 		}
-		_ = survey.AskOne(&survey.Input{Message: "Alias", Default: f.Alias}, &f.Alias, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "S3 bucket name", Default: f.Bucket}, &f.Bucket, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Endpoint URL", Default: f.Endpoint}, &f.Endpoint, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Region", Default: f.Region}, &f.Region, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Key prefix (optional)", Default: f.Prefix}, &f.Prefix)
-		_ = survey.AskOne(&survey.Select{Message: "Credential type", Options: []string{"static", "profile", "iam"}, Default: f.CredentialType}, &f.CredentialType)
+		if err := askOne(&survey.Input{Message: "Alias", Default: f.Alias}, &f.Alias, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "S3 bucket name", Default: f.Bucket}, &f.Bucket, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Endpoint URL", Default: f.Endpoint}, &f.Endpoint, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Region", Default: f.Region}, &f.Region, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Key prefix (optional)", Default: f.Prefix}, &f.Prefix); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Select{Message: "Credential type", Options: []string{"static", "profile", "iam"}, Default: f.CredentialType}, &f.CredentialType); err != nil {
+			return err
+		}
 		switch f.CredentialType {
 		case "static":
-			_ = survey.AskOne(&survey.Input{Message: "Access key ID", Default: f.AccessKey}, &f.AccessKey, survey.WithValidator(survey.Required))
-			_ = survey.AskOne(&survey.Password{Message: "Secret access key (empty to keep unchanged)"}, &f.Secret)
+			if err := askOne(&survey.Input{Message: "Access key ID", Default: f.AccessKey}, &f.AccessKey, survey.WithValidator(survey.Required)); err != nil {
+				return err
+			}
+			if err := askOne(&survey.Password{Message: "Secret access key (empty to keep unchanged)"}, &f.Secret); err != nil {
+				return err
+			}
 		case "profile":
-			_ = survey.AskOne(&survey.Input{Message: "Profile name", Default: f.Profile}, &f.Profile, survey.WithValidator(survey.Required))
+			if err := askOne(&survey.Input{Message: "Profile name", Default: f.Profile}, &f.Profile, survey.WithValidator(survey.Required)); err != nil {
+				return err
+			}
 		}
-		_ = survey.AskOne(&survey.Confirm{Message: "Use path-style addressing?", Default: f.ForcePath}, &f.ForcePath)
-		_ = survey.AskOne(&survey.Confirm{Message: "Insecure TLS (skip verify)?", Default: f.Insecure}, &f.Insecure)
+		if err := askOne(&survey.Confirm{Message: "Use path-style addressing?", Default: f.ForcePath}, &f.ForcePath); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Confirm{Message: "Insecure TLS (skip verify)?", Default: f.Insecure}, &f.Insecure); err != nil {
+			return err
+		}
 	}
 	if f.CredentialType == "static" && f.Secret == "" {
 		f.Secret = cur.SecretAccessKey

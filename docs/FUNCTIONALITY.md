@@ -154,6 +154,7 @@ tagbackup installs a handler for SIGINT (Ctrl-C) and SIGTERM. On receipt:
 
 - An in-progress multipart upload is aborted with `AbortMultipartUpload` so that S3 does not retain partially-uploaded parts (which would otherwise accrue storage charges until a bucket lifecycle policy cleaned them up).
 - An in-progress download is aborted and any partial output file is removed, so a half-downloaded file is never left on disk.
+- Ctrl-C during an interactive survey prompt (`bucket add`, `bucket edit`, `bucket verify`, `bucket delete`, `pull` without `--latest`, `delete` without `--force`) aborts immediately with no stderr message.
 - The process exits with code `130` (SIGINT) or `143` (SIGTERM), following standard shell convention.
 
 ## Retry policy

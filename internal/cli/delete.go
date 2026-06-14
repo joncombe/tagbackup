@@ -128,12 +128,12 @@ func (g *Runtime) runDelete(bucket, tagExpr string, force, dry, asJSON bool, new
 			opts[i] = fmt.Sprintf("%s  %10s  %s  [%s]", ts, humanBytes(o.Size), o.Parsed.DisplayName, o.Parsed.RawTags)
 		}
 		var picked []int
-		if e := survey.AskOne(&survey.MultiSelect{
+		if err := askOneErr(name, &survey.MultiSelect{
 			Message:  "Select files to delete",
 			Options:  opts,
 			PageSize: 20,
-		}, &picked); e != nil {
-			return exitErr(name, e)
+		}, &picked); err != nil {
+			return err
 		}
 		if len(picked) == 0 {
 			return nil

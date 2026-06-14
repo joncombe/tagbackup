@@ -100,20 +100,42 @@ func (g *Runtime) runBucketAdd(f *bucketAddFl) error {
 		if g.NonInter {
 			return exitUsage(name, "--alias, --bucket, --endpoint, --region, and --credential-type are required in non-interactive mode")
 		}
-		_ = survey.AskOne(&survey.Input{Message: "Alias"}, &f.Alias, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "S3 bucket name"}, &f.Bucket, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Endpoint URL"}, &f.Endpoint, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Region"}, &f.Region, survey.WithValidator(survey.Required))
-		_ = survey.AskOne(&survey.Input{Message: "Key prefix (optional)"}, &f.Prefix)
-		_ = survey.AskOne(&survey.Confirm{Message: "Use path-style addressing?", Default: f.ForcePath}, &f.ForcePath)
-		_ = survey.AskOne(&survey.Confirm{Message: "Insecure TLS (skip verify)?", Default: f.Insecure}, &f.Insecure)
-		_ = survey.AskOne(&survey.Select{Message: "Credential type", Options: []string{"static", "profile", "iam"}}, &f.CredentialType)
+		if err := askOne(&survey.Input{Message: "Alias"}, &f.Alias, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "S3 bucket name"}, &f.Bucket, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Endpoint URL"}, &f.Endpoint, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Region"}, &f.Region, survey.WithValidator(survey.Required)); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Input{Message: "Key prefix (optional)"}, &f.Prefix); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Confirm{Message: "Use path-style addressing?", Default: f.ForcePath}, &f.ForcePath); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Confirm{Message: "Insecure TLS (skip verify)?", Default: f.Insecure}, &f.Insecure); err != nil {
+			return err
+		}
+		if err := askOne(&survey.Select{Message: "Credential type", Options: []string{"static", "profile", "iam"}}, &f.CredentialType); err != nil {
+			return err
+		}
 		switch f.CredentialType {
 		case "static":
-			_ = survey.AskOne(&survey.Input{Message: "Access key ID"}, &f.AccessKey, survey.WithValidator(survey.Required))
-			_ = survey.AskOne(&survey.Password{Message: "Secret access key"}, &f.Secret, survey.WithValidator(survey.Required))
+			if err := askOne(&survey.Input{Message: "Access key ID"}, &f.AccessKey, survey.WithValidator(survey.Required)); err != nil {
+				return err
+			}
+			if err := askOne(&survey.Password{Message: "Secret access key"}, &f.Secret, survey.WithValidator(survey.Required)); err != nil {
+				return err
+			}
 		case "profile":
-			_ = survey.AskOne(&survey.Input{Message: "Profile name"}, &f.Profile, survey.WithValidator(survey.Required))
+			if err := askOne(&survey.Input{Message: "Profile name"}, &f.Profile, survey.WithValidator(survey.Required)); err != nil {
+				return err
+			}
 		}
 	}
 	if err := config.ValidateAlias(f.Alias); err != nil {
@@ -206,12 +228,12 @@ func (g *Runtime) cmdBucketVerify() *cobra.Command {
 					}
 					alias = flagBucket
 				} else {
-					if e := survey.AskOne(&survey.Select{
+					if err := askOne(&survey.Select{
 						Message:  "Bucket alias to verify",
 						Options:  aliases,
 						PageSize: 20,
-					}, &alias, survey.WithValidator(survey.Required)); e != nil {
-						return e
+					}, &alias, survey.WithValidator(survey.Required)); err != nil {
+						return err
 					}
 				}
 			}
@@ -332,15 +354,15 @@ func (g *Runtime) cmdBucketDelete() *cobra.Command {
 			}
 			sort.Strings(aliases)
 			var which string
-			if e := survey.AskOne(&survey.Select{Message: "Remove alias", Options: aliases}, &which, survey.WithValidator(survey.Required)); e != nil {
-				return exitErr(name, e)
+			if err := askOneErr(name, &survey.Select{Message: "Remove alias", Options: aliases}, &which, survey.WithValidator(survey.Required)); err != nil {
+				return err
 			}
 			var sure bool
-			if e := survey.AskOne(&survey.Confirm{
+			if err := askOneErr(name, &survey.Confirm{
 				Message: fmt.Sprintf("Remove alias %q from the config? (does not delete the remote bucket)", which),
 				Default: false,
-			}, &sure); e != nil {
-				return exitErr(name, e)
+			}, &sure); err != nil {
+				return err
 			}
 			if !sure {
 				return nil

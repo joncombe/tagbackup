@@ -78,12 +78,12 @@ func (g *Runtime) runPull(bucket, tagExpr string, latest bool, output string) er
 			opts[i] = listFmt.Row(o)
 		}
 		var pick int
-		if e := survey.AskOne(&survey.Select{
+		if err := askOneErr(name, &survey.Select{
 			Message:  "Choose a file",
 			Options:  opts,
 			PageSize: 20,
-		}, &pick); e != nil {
-			return exitErr(name, e)
+		}, &pick); err != nil {
+			return err
 		}
 		chosen = &objs[pick]
 	}
