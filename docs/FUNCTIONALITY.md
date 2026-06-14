@@ -36,7 +36,7 @@ The probe object used by the write/read/delete steps is named `<prefix>.tagbacku
 
 Cleanup is best-effort: tagbackup attempts to delete the probe object when the verify run finishes (whether earlier steps passed or failed). If the delete step itself fails or was never reached because of a permission denial earlier in the sequence, tagbackup prints a warning identifying the residue object key so the operator can remove it by hand.
 
-- `tagbackup bucket delete` - remove a bucket. The user chooses the bucket from a list.
+- `tagbackup bucket delete` - remove a bucket. The user chooses the bucket from a list, then confirms removal.
 
 - `tagbackup bucket list` - list all buckets.
 

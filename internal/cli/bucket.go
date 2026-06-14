@@ -316,6 +316,9 @@ func (g *Runtime) cmdBucketDelete() *cobra.Command {
 			if g.NonInter {
 				return exitUsage(name, "this command is interactive; omit --non-interactive")
 			}
+			if !StdinIsTTY() {
+				return exitUsage(name, "confirmation requires a TTY")
+			}
 			cfg, path, err := config.LoadOrEmpty(g.ConfigPath)
 			if err != nil {
 				return exitConfig(name, err)
@@ -329,7 +332,19 @@ func (g *Runtime) cmdBucketDelete() *cobra.Command {
 			}
 			sort.Strings(aliases)
 			var which string
-			_ = survey.AskOne(&survey.Select{Message: "Remove alias", Options: aliases}, &which, survey.WithValidator(survey.Required))
+			if e := survey.AskOne(&survey.Select{Message: "Remove alias", Options: aliases}, &which, survey.WithValidator(survey.Required)); e != nil {
+				return exitErr(name, e)
+			}
+			var sure bool
+			if e := survey.AskOne(&survey.Confirm{
+				Message: fmt.Sprintf("Remove alias %q from the config? (does not delete the remote bucket)", which),
+				Default: false,
+			}, &sure); e != nil {
+				return exitErr(name, e)
+			}
+			if !sure {
+				return nil
+			}
 			delete(cfg.Buckets, which)
 			if e := config.Save(path, cfg); e != nil {
 				return exitConfig(name, e)

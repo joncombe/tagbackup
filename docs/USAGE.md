@@ -165,7 +165,7 @@ Interactive: pick a bucket, then adjust fields. Does not allow alias collisions.
 
 ## `tagbackup bucket delete`
 
-Interactive: pick an alias to remove from the local config only (not the remote bucket).
+Interactive: pick an alias, then confirm removal. Only the local config entry is removed (not the remote bucket). Declining confirmation is a no-op.
 
 ---
 
