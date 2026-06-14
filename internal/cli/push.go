@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -100,13 +99,5 @@ func (g *Runtime) runPush(path, bucket, tagStr, filename string) error {
 	if e := st.Upload(g.Ctx, key, body, size); e != nil {
 		return exitS3(name, e)
 	}
-	if g.Quiet {
-		return nil
-	}
-	if g.Log != nil {
-		g.Log.Info("uploaded", "key", key)
-		return nil
-	}
-	_, _ = fmt.Fprintln(os.Stderr, "uploaded", key)
 	return nil
 }

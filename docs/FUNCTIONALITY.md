@@ -67,7 +67,7 @@ When reading from stdin, the upload progress is shown as a bytes-transferred cou
 
 **Sub-millisecond collisions.** The timestamp is millisecond-precision. Two pushes from the same machine in the same millisecond produce the same key, and the second push will overwrite the first. This is a deliberate trade-off in favour of a simple, parseable filename format; in practice push is invoked from human commands or cron tasks separated by seconds, not from tight loops, so collisions are not expected to occur.
 
-Display the upload progress and a success or fail message on completion (subject to the global `--quiet` flag, see Global behaviour). This command is non-interactive.
+Display upload progress on a TTY (subject to the global `--quiet` flag, see Global behaviour). Success is indicated by exit code 0; failures print an error to stderr. This command is non-interactive.
 
 - `tagbackup pull --bucket=mybucket --tag=mytag --latest` - download a file from the specified bucket alias matching this tag if it exists. --bucket and --tag are required parameters. There are a few caveats here:
   - `--bucket` (required)
@@ -81,7 +81,7 @@ Display the upload progress and a success or fail message on completion (subject
   - `--output=PATH` (optional)
     - write the downloaded file to `PATH` instead of the current working directory. Pass `-` to write the file body to standard output. Example: `tagbackup pull --bucket=db --tag=maindb --latest --output=- | psql mydb`.
 
-Display the download progress and a success or fail message on completion (subject to the global `--quiet` flag, see Global behaviour). When `--output=-` is used, progress output is forced to stderr so it does not contaminate the piped file body. This command is non-interactive only with the inclusion of the --latest flag.
+Display download progress on a TTY (subject to the global `--quiet` flag, see Global behaviour). Success is indicated by exit code 0; failures print an error to stderr. When `--output=-` is used, progress output is forced to stderr so it does not contaminate the piped file body. This command is non-interactive only with the inclusion of the --latest flag.
 
 When `--output` is not given, the file is downloaded to the current working directory using the original filename. In the case of a name collision the downloaded file overwrites the existing file. The download is written to a temporary file and atomically renamed on success, so an interrupted download never leaves a half-written file in place.
 

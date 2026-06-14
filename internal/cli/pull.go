@@ -152,8 +152,5 @@ func (g *Runtime) runPull(bucket, tagExpr string, latest bool, output string) er
 		_ = os.Remove(tmp)
 		return exitErr(name, err)
 	}
-	if g.Log != nil && !g.Quiet {
-		g.Log.Info("downloaded", "path", filepath.Clean(dest))
-	}
 	return nil
 }
