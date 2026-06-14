@@ -49,7 +49,18 @@ Requires [Go 1.25+](https://go.dev/dl/).
 go build -o tagbackup ./cmd/tagbackup
 ```
 
-Or use the Makefile: `make build` (or `make run` to build and run).
+This works out of the box because the web UI for `tagbackup serve` is built into
+`internal/server/dist` and committed to the repository.
+
+If you change anything under `web/`, rebuild the UI (requires Node.js + npm) and
+re-build the binary:
+
+```sh
+make web          # npm install + vite build into internal/server/dist
+make build-go     # go build using the freshly built assets
+```
+
+`make build` runs both steps in sequence. Use `make run` to build and run.
 
 ## Build a new version
 

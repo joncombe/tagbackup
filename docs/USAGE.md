@@ -123,6 +123,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup files` | List objects matching a tag expression |
 | `tagbackup tags` | List all tags in the bucket with file counts and date ranges |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
+| `tagbackup serve` | Run a local, read-only web UI for browsing buckets, tags, and files |
 
 ---
 
@@ -274,6 +275,38 @@ Use **either** `--newer-than` or `--older-than`, not both. Duration is an intege
 
 Non-interactive automation typically uses:  
 `--force` or `--dry-run`, and often `--older-than=…` for retention.
+
+---
+
+## `tagbackup serve`
+
+```text
+tagbackup serve [--port=PORT] [--no-open]
+```
+
+Starts a small local web server that hosts a **read-only** browser for your buckets, then opens it in your default browser. Use it when you want to skim files and tags visually rather than at the command line.
+
+| Flag | Default | Role |
+| ---- | ------- | ---- |
+| `--port=PORT` | `3000` | Port to listen on. If the port is already in use, the command exits with an error so you can pick another. |
+| `--no-open` | off | Do not open a browser automatically; just print the URL. |
+
+Behaviour:
+
+- The server binds to **`127.0.0.1` only** — it is never exposed on your network. Even so, treat it as you would any local listing of your filenames.
+- Unlike the file commands, `serve` does **not** take `--bucket`; every configured bucket appears as a tab. The first alias (alphabetically) is selected automatically. With no buckets configured, the page shows a "no buckets" message.
+- For the selected bucket you get the available tags as filter buttons, and a table of files (filename, size, timestamp with a relative "… ago", and tags). Click column headers to sort; click tags to filter. A match-mode toggle controls how multiple selected tags combine: **OR** (the default) shows files with **any** of the selected tags, while **AND** narrows to files that have **all** of them. Results are paginated.
+- The view loads all of a bucket's objects once and does filtering, sorting, and paging in the browser, so a very large bucket may take a moment to load.
+- It is read-only for now; uploading, deleting, and editing tags may come in a future release.
+- Stop the server with **Ctrl+C**.
+
+```sh
+tagbackup serve                 # open the UI on http://127.0.0.1:3000
+tagbackup serve --port 8080     # use a different port
+tagbackup serve --no-open       # print the URL but do not launch a browser
+```
+
+The web UI is embedded in the binary; there is nothing extra to install or run separately.
 
 ---
 

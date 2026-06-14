@@ -3,7 +3,11 @@
 tagbackup
 *.exe
 
-# GoReleaser output
-dist/
+# GoReleaser output (repo root only; internal/server/dist is the committed,
+# embedded web UI build and must NOT be ignored)
+/dist/
+
+# Frontend dev dependencies
+/web/node_modules/
 
 .DS_Store

@@ -32,6 +32,8 @@ The Go module path is `github.com/joncombe/tagbackup`. The compiled binary is na
 - `internal/config` - YAML loading, schema validation, schema versioning, and credential resolution.
 - `internal/store` - the S3 layer: an `ObjectStore` interface plus the AWS-SDK-v2-backed implementation. Tests use a fake implementation of the interface.
 - `internal/tagexpr` - the tag expression parser and evaluator. Pure code, no external dependencies, fully unit-tested.
+- `internal/server` - the `tagbackup serve` HTTP server: a small read-only JSON API over `internal/config` and `internal/store`, plus the single-page web UI embedded from `internal/server/dist` via `//go:embed`.
+- `web/` - the React + Vite + TypeScript source for the embedded UI. It builds into `internal/server/dist` (committed) so `go build`/`go install` need no Node toolchain.
 
 # CLI conventions
 

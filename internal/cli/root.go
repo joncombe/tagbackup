@@ -49,6 +49,7 @@ func newRoot() *cobra.Command {
 		g.cmdDelete(),
 		g.cmdTags(),
 		g.cmdBucket(),
+		g.cmdServe(),
 	)
 
 	return root
