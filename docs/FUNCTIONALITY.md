@@ -77,7 +77,7 @@ Display the upload progress and a success or fail message on completion (subject
     - The tag parameter follows the "tag grammar" rules (see below).
   - `--latest` (optional)
     - if the --latest flag is provided, download the newest file from the matching list (if it exists).
-    - if the --latest flag is omitted, show a list of files, with a human readable datetime and filesize, and the user can select from the list. paginate the list if needbe.
+    - if the --latest flag is omitted, show a list of files with column headers (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`), a human-readable datetime and filesize per row, and the user can select from the list. paginate the list if needbe.
   - `--output=PATH` (optional)
     - write the downloaded file to `PATH` instead of the current working directory. Pass `-` to write the file body to standard output. Example: `tagbackup pull --bucket=db --tag=maindb --latest --output=- | psql mydb`.
 
@@ -85,7 +85,7 @@ Display the download progress and a success or fail message on completion (subje
 
 When `--output` is not given, the file is downloaded to the current working directory using the original filename. In the case of a name collision the downloaded file overwrites the existing file. The download is written to a temporary file and atomically renamed on success, so an interrupted download never leaves a half-written file in place.
 
-- `tagbackup files --bucket=mybucket --tag=mytag` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below), and output human readable output and pagination as in `tagbackup pull`.
+- `tagbackup files --bucket=mybucket --tag=mytag` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below). Human-readable output prints a header row (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) followed by one row per match, sorted newest-first. Pagination behaviour matches the interactive list in `tagbackup pull`.
   - `--json` (optional) - emit machine-readable output to stdout, one JSON object per line with `key`, `tags` (an array of strings), `size` (bytes), and `timestamp` (the 13-digit epoch-ms value embedded in the filename). Disables pagination and any interactive prompts; suitable for scripting.
 
 This command is non-interactive.
@@ -209,7 +209,7 @@ v1 supports only the operators listed above. There are no wildcards, no regex, a
 # Notes
 
 - Always use the timestamp in the filename, and not any S3 meta information such as `LastModified`.
-- The human-readable datetime shown by `tagbackup files` (and the interactive picker in `tagbackup pull` when `--latest` is omitted) is derived from the embedded filename timestamp, not from S3 `LastModified`.
+- The human-readable datetime shown by `tagbackup files` (and the interactive picker in `tagbackup pull` when `--latest` is omitted) is derived from the embedded filename timestamp, not from S3 `LastModified`. Both commands print column headers (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) above the file rows.
 - tagbackup should ignore all files in the bucket that do not match its own naming convention.
 
 # Handling errors

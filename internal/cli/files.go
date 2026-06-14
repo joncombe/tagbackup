@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"time"
 
 	"github.com/joncombe/tagbackup/internal/config"
 	"github.com/joncombe/tagbackup/internal/store"
@@ -80,9 +79,10 @@ func (g *Runtime) runFiles(bucket, tagExpr string, asJSON bool) error {
 		return nil
 	}
 
+	listFmt := newFileListFmt(objs)
+	fmt.Printf("%s\n", listFmt.Header())
 	for _, o := range objs {
-		ts := time.UnixMilli(o.Parsed.Timestamp).UTC().Format("2006-01-02 15:04:05Z")
-		fmt.Printf("%s  %10s  %s  [%s]\n", ts, humanBytes(o.Size), o.Parsed.DisplayName, o.Parsed.RawTags)
+		fmt.Printf("%s\n", listFmt.Row(o))
 	}
 	return nil
 }

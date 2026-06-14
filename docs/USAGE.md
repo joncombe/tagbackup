@@ -199,10 +199,19 @@ tagbackup pull --bucket=ALIAS --tag=EXPRESSION [flags]
 | `--latest` | Download the single newest matching object (by embedded filename timestamp) |
 | `--output=PATH` | Destination path. Omit: download to the current directory using the object’s display name. `-`: write the body to **stdout** (progress goes to stderr). If `PATH` is an existing directory, or ends with a path separator, the file is written **inside** that directory under the object’s name. Parent directories are created as needed. |
 
-- **Without** `--latest`: an interactive chooser lists matches (paged, 20 at a time) unless you cannot use interactive mode — then you need `--non-interactive` with `--latest`.
+- **Without** `--latest`: an interactive chooser lists matches (paged, 20 at a time) with column headers (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) above the list, unless you cannot use interactive mode — then you need `--non-interactive` with `--latest`.
 - **With** `--non-interactive` and no `--latest`, the command fails (cannot prompt).
 
 If no object matches, exit code **5** (no matches).
+
+Example interactive chooser (headers on stderr, above the prompt):
+
+```text
+  TIMESTAMP                 SIZE  FILENAME  TAGS
+? Choose a file
+  2026-06-13 22:34:01Z    1.2 MiB  dump.sql  [maindb]
+> 2026-06-08 22:34:01Z    1.1 MiB  dump.sql  [maindb]
+```
 
 ---
 
@@ -212,7 +221,15 @@ If no object matches, exit code **5** (no matches).
 tagbackup files --bucket=ALIAS --tag=EXPRESSION [--json]
 ```
 
-- `--json`: one JSON object per line on stdout with `key`, `tags`, `size`, `timestamp` (epoch ms from the key). No paging; suitable for scripts.
+- `--json`: one JSON object per line on stdout with `key`, `tags`, `size`, `timestamp` (epoch ms from the key). No header row; no paging; suitable for scripts.
+
+Human-readable output (default) prints a header row and one line per match, sorted newest-first:
+
+```text
+TIMESTAMP                 SIZE  FILENAME  TAGS
+2026-06-13 22:34:01Z    1.2 MiB  dump.sql  [maindb]
+2026-06-08 22:34:01Z    1.1 MiB  dump.sql  [maindb]
+```
 
 Non-interactive. Empty match set uses exit code **5**.
 
@@ -225,6 +242,12 @@ tagbackup tags --bucket=ALIAS
 ```
 
 Lists every tag that appears in at least one object in the bucket. For each tag, shows the tag name, number of files carrying that tag, and the datetime of the oldest and newest file with that tag. Tags are sorted alphabetically. Output is always to stdout; non-interactive.
+
+```text
+TAG          FILES  OLDEST                NEWEST
+bpmapi           6  2026-06-08 22:34:01Z  2026-06-13 22:34:01Z
+joncombeapi      8  2026-06-07 08:19:23Z  2026-06-13 22:33:01Z
+```
 
 Empty bucket (no tagbackup objects) uses exit code **5**.
 

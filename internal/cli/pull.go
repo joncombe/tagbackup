@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/joncombe/tagbackup/internal/config"
@@ -72,10 +71,11 @@ func (g *Runtime) runPull(bucket, tagExpr string, latest bool, output string) er
 		if !StdinIsTTY() {
 			return exitUsage(name, "interactive selection requires a TTY on stdin")
 		}
+		listFmt := newFileListFmt(objs)
+		fmt.Fprintf(os.Stderr, "  %s\n", listFmt.Header())
 		opts := make([]string, len(objs))
 		for i, o := range objs {
-			ts := time.UnixMilli(o.Parsed.Timestamp).UTC().Format("2006-01-02 15:04:05Z")
-			opts[i] = fmt.Sprintf("%s  %10s  %s  [%s]", ts, humanBytes(o.Size), o.Parsed.DisplayName, o.Parsed.RawTags)
+			opts[i] = listFmt.Row(o)
 		}
 		var pick int
 		if e := survey.AskOne(&survey.Select{
