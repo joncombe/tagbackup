@@ -1,6 +1,6 @@
 # tagbackup
 
-Command-line tool to upload, download, list, and delete files in S3-compatible storage (for example Amazon S3, MinIO, or Cloudflare R2). Files are identified and filtered with **tags**; object keys are generated in a consistent, timestamped format. The CLI talks directly to the bucket you configure; optionally, `tagbackup serve` runs a local web UI on `127.0.0.1` for browsing, uploading, and deleting files.
+Command-line tool to upload, download, list, and delete files in S3-compatible storage (for example Amazon S3, MinIO, or Cloudflare R2). Files are identified and filtered with **tags**; object keys are generated in a consistent, timestamped format. The CLI talks directly to the bucket you configure; optionally, `tagbackup serve` runs a local web UI on `127.0.0.1` for browsing, uploading, downloading, and deleting files.
 
 ## Install
 

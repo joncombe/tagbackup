@@ -69,86 +69,88 @@ export function FileTable({
   return (
     <div className="fileTableScroll">
       <table className="fileTable">
-      <thead>
-        <tr>
-          <th className="colCheck">
-            <input
-              ref={selectAllRef}
-              type="checkbox"
-              className="rowCheck"
-              checked={allChecked}
-              aria-label="Select all files on this page"
-              onChange={toggleSelectAll}
-            />
-          </th>
-          {COLUMNS.map((c) => {
-            const active = sortField === c.field;
-            return (
-              <th key={c.field} className={c.className}>
-                <button
-                  type="button"
-                  className={`sortHeader${active ? " sortHeaderActive" : ""}`}
-                  aria-sort={
-                    active
-                      ? sortDirection === "asc"
-                        ? "ascending"
-                        : "descending"
-                      : "none"
-                  }
-                  onClick={() => onSort(c.field)}
-                >
-                  {c.label}
-                  <SortIndicator active={active} direction={sortDirection} />
-                </button>
-              </th>
-            );
-          })}
-          <th className="colTags">Tags</th>
-          <th className="colDownload" aria-label="Download" />
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((o) => (
-          <tr key={o.key}>
-            <td className="colCheck">
+        <thead>
+          <tr>
+            <th className="colCheck">
               <input
+                ref={selectAllRef}
                 type="checkbox"
                 className="rowCheck"
-                checked={checkedKeys.has(o.key)}
-                aria-label={`Select ${o.filename}`}
-                onChange={(e) => onCheck(o.key, e.target.checked)}
+                checked={allChecked}
+                aria-label="Select all files on this page"
+                onChange={toggleSelectAll}
               />
-            </td>
-            <td className="cellName">{o.filename}</td>
-            <td className="colSize">{humanBytes(o.size)}</td>
-            <td className="colTime">
-              <span className="absTime">{formatTimestamp(o.timestamp)}</span>
-              <span className="relTime">{relativeTime(o.timestamp, now)}</span>
-            </td>
-            <td className="colTags">
-              <span className="tagList">
-                {o.tags.map((t) => (
-                  <span key={t} className="tagPill">
-                    <Tag size={12} aria-hidden="true" />
-                    {t}
-                  </span>
-                ))}
-              </span>
-            </td>
-            <td className="colDownload">
-              <a
-                href={objectDownloadURL(bucketAlias, o.key)}
-                download={o.filename}
-                className="downloadBtn"
-                aria-label={`Download ${o.filename}`}
-              >
-                <Download size={16} aria-hidden="true" />
-              </a>
-            </td>
+            </th>
+            {COLUMNS.map((c) => {
+              const active = sortField === c.field;
+              return (
+                <th key={c.field} className={c.className}>
+                  <button
+                    type="button"
+                    className={`sortHeader${active ? " sortHeaderActive" : ""}`}
+                    aria-sort={
+                      active
+                        ? sortDirection === "asc"
+                          ? "ascending"
+                          : "descending"
+                        : "none"
+                    }
+                    onClick={() => onSort(c.field)}
+                  >
+                    {c.label}
+                    <SortIndicator active={active} direction={sortDirection} />
+                  </button>
+                </th>
+              );
+            })}
+            <th className="colTags">Tags</th>
+            <th className="colDownload" aria-label="Download" />
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((o) => (
+            <tr key={o.key}>
+              <td className="colCheck">
+                <input
+                  type="checkbox"
+                  className="rowCheck"
+                  checked={checkedKeys.has(o.key)}
+                  aria-label={`Select ${o.filename}`}
+                  onChange={(e) => onCheck(o.key, e.target.checked)}
+                />
+              </td>
+              <td className="cellName">{o.filename}</td>
+              <td className="colSize">{humanBytes(o.size)}</td>
+              <td className="colTime">
+                <span className="absTime">{formatTimestamp(o.timestamp)}</span>
+                <span className="relTime">
+                  {relativeTime(o.timestamp, now)}
+                </span>
+              </td>
+              <td className="colTags">
+                <span className="tagList">
+                  {o.tags.map((t) => (
+                    <span key={t} className="tagPill">
+                      <Tag size={12} aria-hidden="true" />
+                      {t}
+                    </span>
+                  ))}
+                </span>
+              </td>
+              <td className="colDownload">
+                <a
+                  href={objectDownloadURL(bucketAlias, o.key)}
+                  download={o.filename}
+                  className="downloadBtn"
+                  aria-label={`Download ${o.filename}`}
+                >
+                  <Download size={16} aria-hidden="true" />
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

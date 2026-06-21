@@ -79,7 +79,7 @@ Display upload progress on a TTY (subject to the global `--quiet` flag, see Glob
     - if the --latest flag is provided, download the newest file from the matching list (if it exists).
     - if the --latest flag is omitted, show a list of files with column headers (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`), a human-readable datetime and filesize per row, and the user can select from the list. paginate the list if needbe.
   - `--output=PATH` (optional)
-    - write the downloaded file to `PATH` instead of the current working directory. Pass `-` to write the file body to standard output. Example: `tagbackup pull --bucket=db --tag=maindb --latest --output=- | psql mydb`.
+    - write the downloaded file to `PATH` instead of the current working directory. Pass `-` to write the file body to standard output. Example: `tagbackup pull --bucket=db --tag=maindb --latest --output=- | psql mydb`. If `PATH` is an existing directory, or ends with a path separator, the file is written inside that directory under the object's display name. Parent directories are created as needed.
 
 Display download progress on a TTY (subject to the global `--quiet` flag, see Global behaviour). Success is indicated by exit code 0; failures print an error to stderr. When `--output=-` is used, progress output is forced to stderr so it does not contaminate the piped file body. This command is non-interactive only with the inclusion of the --latest flag.
 
@@ -114,13 +114,15 @@ Display a list of the deleted files and a success or fail message on completion 
   - `--port=PORT` (default `3000`) - TCP port to listen on (must be between 1 and 65535). Exits with a usage error if the value is out of range, or with an error if the port is already in use.
   - `--no-open` - print the URL but do not launch a browser.
 
-The UI is embedded in the binary via `//go:embed` from `internal/server/dist`; no separate web server or Node runtime is required at install time. The header shows the running binary version (from `/api/version`) and a link to tagbackup.com.
+The UI is embedded in the binary via `//go:embed` from `internal/server/dist`; no separate web server or Node runtime is required at install time. The header shows the tagbackup wordmark only; the footer shows the running binary version (from `/api/version`) and a link to tagbackup.com.
 
-**Browsing.** Every configured bucket alias appears as a tab (first alias selected alphabetically). An info (ℹ) button beside the tabs opens a read-only dialog showing that bucket's configuration: alias, S3 bucket name, endpoint, region, prefix, path-style and TLS options, credential type, and credential source. Inline static credentials are masked (`****` plus the last four characters). When credentials are provided via environment variables, values are omitted and a note explains that. For the selected bucket, tag filter buttons and a sortable, paginated file table show filename, size, timestamp (absolute plus relative), and tags. One tag filter may be active at a time. The browser loads all objects for a bucket in one request and performs filtering, sorting, and paging client-side (50 files per page). A footer below the table shows the total matching file count and combined size for the current filter, plus previous/next page controls.
+**Browsing.** Every configured bucket alias appears as a tab (first alias selected alphabetically). An info (ℹ) button beside the tabs opens a read-only dialog showing that bucket's configuration: alias, S3 bucket name, endpoint, region, prefix, path-style and TLS options, credential type, and credential source. Inline static credentials are masked (`****` plus the last four characters). When credentials are provided via environment variables, values are omitted and a note explains that. For the selected bucket, tag filter buttons and a sortable, paginated file table show filename, size, timestamp (absolute plus relative), and tags. One tag filter may be active at a time. The browser loads all objects for a bucket in one request and performs filtering, sorting, and paging client-side (50 files per page). A footer below the table shows the total matching file count and combined size for the current filter, the binary version, a link to tagbackup.com, and previous/next page controls.
 
 **Upload.** An Upload button reveals a drag-and-drop area (or file picker). After selecting one or more files, a dialog lets the user toggle existing bucket tags and/or enter new tags. The same tag set is applied to every file in the batch. Tags follow the same `[a-zA-Z0-9]` rules as `push`; at least one valid tag is required. Original filenames are taken from the filesystem (no renaming). Uploads run one file at a time with a progress indicator; per-file failures are ignored silently. On completion the file list refreshes.
 
-**Delete.** Checkboxes beside each row and a header select-all toggle apply to the current page only (50 files per page). Delete is disabled until at least one file is checked. A confirmation dialog shows the count; after confirmation, deletions run one object at a time with a progress indicator. Per-file failures are ignored silently. On completion the file list refreshes.
+**Download.** Each row in the file table has a download button. Clicking it fetches the object via the download API and saves it under the original filename (browser download behaviour). There is no tag-expression or "latest" picker — the user downloads the specific object shown in the row.
+
+**Delete.** Checkboxes beside each row and a header select-all toggle apply to the current page only (50 files per page). If Delete is clicked with no files checked, a hint dialog explains that the user must select files first. When at least one file is checked, a confirmation dialog shows the count; after confirmation, deletions run one object at a time with a progress indicator. Per-file failures are ignored silently. On completion the file list refreshes.
 
 **Not supported in the web UI:** editing tags on existing objects, stdin uploads, tag expressions, age filters, and bucket configuration editing.
 
@@ -132,6 +134,7 @@ The UI is embedded in the binary via `//go:embed` from `internal/server/dist`; n
 | `GET` | `/api/buckets` | List configured bucket aliases (sorted) |
 | `GET` | `/api/buckets/{alias}` | Read-only bucket configuration (secrets masked: `****` plus last 4 characters; env-provided credentials omit values) |
 | `GET` | `/api/buckets/{alias}/objects` | List all tagbackup objects in a bucket |
+| `GET` | `/api/buckets/{alias}/objects/download?key=KEY` | Download one object (`Content-Disposition: attachment`; original filename) |
 | `POST` | `/api/buckets/{alias}/objects` | Upload one file (`multipart/form-data`: fields `file` and `tags` as a JSON array) |
 | `DELETE` | `/api/buckets/{alias}/objects` | Delete one object (JSON body `{"key":"..."}`) |
 | `GET` | `/*` | Embedded SPA static assets |
@@ -270,7 +273,7 @@ Imagine a scenario where production data is managed on a server, and a software 
 
 On both machines:
 
-- install tagbackup (instruction to come later)
+- install tagbackup (see [README.md](../README.md) or [USAGE.md](USAGE.md))
 - use `tagbackup bucket add` interactive to setup access to the same S3 bucket
 
 On the server, set up a script run by cron. This script performs the following daily:

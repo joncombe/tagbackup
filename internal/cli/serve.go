@@ -17,7 +17,7 @@ func (g *Runtime) cmdServe() *cobra.Command {
 	var noOpen bool
 	cmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Serve a local web UI for browsing, uploading, and deleting files",
+		Short: "Serve a local web UI for browsing, uploading, downloading, and deleting files",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return g.runServe(port, noOpen)
 		},

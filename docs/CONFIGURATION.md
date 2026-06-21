@@ -10,14 +10,14 @@ unattended cron jobs, where no human is available to type a password.
 ## File location
 
 tagbackup looks for `config.yaml` in the standard per-user config directory
-for the operating system:
+for the operating system (via Go's `os.UserConfigDir()`):
 
-- Linux / macOS: `$XDG_CONFIG_HOME/tagbackup/config.yaml`, falling back to
+- Linux: `$XDG_CONFIG_HOME/tagbackup/config.yaml`, falling back to
   `~/.config/tagbackup/config.yaml` when `XDG_CONFIG_HOME` is unset.
+- macOS: `~/Library/Application Support/tagbackup/config.yaml`.
 - Windows: `%AppData%\tagbackup\config.yaml`.
 
-Viper resolves the path; the directory is created on first write if it does
-not already exist.
+The directory is created on first write if it does not already exist.
 
 ## File format
 

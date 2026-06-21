@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Local read-only web UI served by `tagbackup serve`.",
+  "description": "Local web UI served by `tagbackup serve`.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

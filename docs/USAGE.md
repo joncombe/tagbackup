@@ -123,7 +123,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup files` | List objects matching a tag expression |
 | `tagbackup tags` | List all tags in the bucket with file counts and date ranges |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
-| `tagbackup serve` | Run a local web UI for browsing, uploading, and deleting files |
+| `tagbackup serve` | Run a local web UI for browsing, uploading, downloading, and deleting files |
 
 ---
 
@@ -284,7 +284,7 @@ Non-interactive automation typically uses:
 tagbackup serve [--port=PORT] [--no-open]
 ```
 
-Starts a small local web server that hosts a browser for your buckets, then opens it in your default browser. Use it when you want to browse, upload, or delete files visually rather than at the command line.
+Starts a small local web server that hosts a browser for your buckets, then opens it in your default browser. Use it when you want to browse, upload, download, or delete files visually rather than at the command line.
 
 | Flag | Default | Role |
 | ---- | ------- | ---- |
@@ -294,13 +294,14 @@ Starts a small local web server that hosts a browser for your buckets, then open
 Behaviour:
 
 - The server binds to **`127.0.0.1` only** — it is never exposed on your network. Even so, treat it as you would any local tool that can read and write your bucket.
-- The header shows the running binary version and a link to tagbackup.com.
+- The header shows the tagbackup wordmark only; the footer shows the running binary version and a link to tagbackup.com.
 - Unlike the file commands, `serve` does **not** take `--bucket`; every configured bucket appears as a tab. The first alias (alphabetically) is selected automatically. With no buckets configured, the page shows a "no buckets" message.
 - An **info (ℹ) button** beside the bucket tabs opens a read-only configuration dialog for the selected bucket (endpoint, region, prefix, credential type/source, masked keys). When credentials come from environment variables, values are not shown. You cannot edit configuration from the web UI — use `tagbackup bucket edit` or edit `config.yaml` directly.
-- For the selected bucket you get the available tags as filter buttons, and a table of files (filename, size, timestamp with a relative "… ago", and tags). Click column headers to sort. Click a tag filter button to show only files with that tag; click it again to show all files. Only one tag can be active at a time. Results are paginated (50 files per page); a footer shows the total matching file count and combined size, plus page controls.
+- For the selected bucket you get the available tags as filter buttons, and a table of files (filename, size, timestamp with a relative "… ago", and tags). Click column headers to sort. Click a tag filter button to show only files with that tag; click it again to show all files. Only one tag can be active at a time. Results are paginated (50 files per page); a footer shows the total matching file count and combined size, page controls, the binary version, and a link to tagbackup.com.
 - The view loads all of a bucket's objects once and does filtering, sorting, and paging in the browser, so a very large bucket may take a moment to load.
 - **Upload** — click the Upload button to reveal a drag-and-drop area (or click to browse). Select one or more files, then choose tags in a dialog: toggle existing bucket tags and/or type new ones. The same tags are applied to every file in the batch. Tags must be `[a-zA-Z0-9]` only; invalid tags are highlighted and block submission. Filenames come from the filesystem; renaming is not supported. A progress bar is shown while uploads run; per-file failures are ignored and the list refreshes when done.
-- **Delete** — checkboxes beside each file (and a select-all toggle in the header) let you pick files on the **current page only**. Click Delete, confirm in a dialog, then watch a progress bar while deletions run. Per-file failures are ignored and the list refreshes when done.
+- **Download** — each row has a download button. Click it to save that object under its original filename. There is no tag-expression or "latest" picker; you download the specific file shown in the row.
+- **Delete** — checkboxes beside each file (and a select-all toggle in the header) let you pick files on the **current page only**. Click Delete; if nothing is selected, a hint dialog explains that you must check files first. With files selected, confirm in a dialog, then watch a progress bar while deletions run. Per-file failures are ignored and the list refreshes when done.
 - Tag editing on existing objects is not supported in the web UI.
 - Stop the server with **Ctrl+C**.
 
