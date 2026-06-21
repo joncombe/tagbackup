@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchBuckets, fetchObjects } from "./api";
+import { fetchBuckets, fetchObjects, fetchVersion } from "./api";
 import type { FileObject, SortDirection, SortField } from "./types";
 import { BucketTabs } from "./components/BucketTabs";
 import { TagFilters } from "./components/TagFilters";
 import { FileTable } from "./components/FileTable";
 import { Pagination } from "./components/Pagination";
 import { DeleteModal } from "./components/DeleteModal";
+import { BucketInfoModal } from "./components/BucketInfoModal";
 import { UploadDropZone } from "./components/UploadDropZone";
 import { UploadModal } from "./components/UploadModal";
 
@@ -39,6 +40,8 @@ export function App() {
   const [showDropZone, setShowDropZone] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
 
   // A single "now" snapshot keeps relative times stable across a render and
   // refreshes them every minute.
@@ -57,6 +60,14 @@ export function App() {
       .catch((e: unknown) =>
         setBucketsError(e instanceof Error ? e.message : String(e)),
       );
+  }, []);
+
+  useEffect(() => {
+    void fetchVersion()
+      .then(setAppVersion)
+      .catch(() => {
+        // omit version if unavailable
+      });
   }, []);
 
   const reloadObjects = useCallback(async (alias: string) => {
@@ -109,6 +120,13 @@ export function App() {
     for (const o of objects) for (const t of o.tags) set.add(t);
     return [...set].sort();
   }, [objects]);
+
+  useEffect(() => {
+    if (selectedTag !== null && !tags.includes(selectedTag)) {
+      setSelectedTag(null);
+      setPage(1);
+    }
+  }, [tags, selectedTag]);
 
   const filtered = useMemo(() => {
     if (selectedTag === null) return objects;
@@ -210,6 +228,17 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <span className="wordmark">tagbackup</span>
+        <div className="topbarMeta">
+          {appVersion && <span className="topbarVersion">v{appVersion}</span>}
+          <a
+            className="topbarLink"
+            href="https://tagbackup.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            tagbackup.com
+          </a>
+        </div>
       </header>
 
       {buckets !== null && buckets.length > 0 && (
@@ -217,6 +246,7 @@ export function App() {
           buckets={buckets}
           selected={selected}
           onSelect={setSelected}
+          onInfoClick={() => setShowInfoModal(true)}
         />
       )}
 
@@ -291,6 +321,13 @@ export function App() {
           total={sorted.length}
           totalBytes={totalBytes}
           onPageChange={changePage}
+        />
+      )}
+
+      {showInfoModal && selected && (
+        <BucketInfoModal
+          alias={selected}
+          onClose={() => setShowInfoModal(false)}
         />
       )}
 

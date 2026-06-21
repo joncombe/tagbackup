@@ -17,7 +17,7 @@ func (g *Runtime) cmdServe() *cobra.Command {
 	var noOpen bool
 	cmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Serve a local read-only web UI for browsing buckets",
+		Short: "Serve a local web UI for browsing, uploading, and deleting files",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return g.runServe(port, noOpen)
 		},
@@ -36,6 +36,7 @@ func (g *Runtime) runServe(port int, noOpen bool) error {
 	srv := server.New(server.Options{
 		ConfigPath: g.ConfigPath,
 		Debug:      g.debugLogger(),
+		Version:    version,
 	})
 
 	// Bind to localhost only: this exposes bucket filenames and must never be

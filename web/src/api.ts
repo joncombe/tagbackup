@@ -1,4 +1,4 @@
-import type { FileObject } from "./types";
+import type { BucketConfig, FileObject } from "./types";
 
 async function getJSON<T>(url: string): Promise<T> {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
@@ -30,27 +30,30 @@ export function fetchBuckets(): Promise<string[]> {
   return getJSON<string[]>("/api/buckets");
 }
 
+export async function fetchVersion(): Promise<string> {
+  const data = await getJSON<{ version: string }>("/api/version");
+  return data.version;
+}
+
+export function fetchBucketConfig(alias: string): Promise<BucketConfig> {
+  return getJSON<BucketConfig>(`/api/buckets/${encodeURIComponent(alias)}`);
+}
+
 export function fetchObjects(alias: string): Promise<FileObject[]> {
   return getJSON<FileObject[]>(
     `/api/buckets/${encodeURIComponent(alias)}/objects`,
   );
 }
 
-export async function deleteObject(
-  alias: string,
-  key: string,
-): Promise<void> {
-  const res = await fetch(
-    `/api/buckets/${encodeURIComponent(alias)}/objects`,
-    {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ key }),
+export async function deleteObject(alias: string, key: string): Promise<void> {
+  const res = await fetch(`/api/buckets/${encodeURIComponent(alias)}/objects`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({ key }),
+  });
   if (!res.ok) {
     throw new Error(await parseError(res));
   }
@@ -64,13 +67,10 @@ export async function uploadObject(
   const form = new FormData();
   form.append("file", file);
   form.append("tags", JSON.stringify(tags));
-  const res = await fetch(
-    `/api/buckets/${encodeURIComponent(alias)}/objects`,
-    {
-      method: "POST",
-      body: form,
-    },
-  );
+  const res = await fetch(`/api/buckets/${encodeURIComponent(alias)}/objects`, {
+    method: "POST",
+    body: form,
+  });
   if (!res.ok) {
     throw new Error(await parseError(res));
   }

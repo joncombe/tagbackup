@@ -108,6 +108,40 @@ Tags are sorted alphabetically. Output is tabular, non-interactive, and always g
 
 Display a list of the deleted files and a success or fail message on completion (subject to the global `--quiet` flag, see Global behaviour). This command is non-interactive only with the inclusion of the `--force` flag.
 
+# Web UI (`tagbackup serve`)
+
+- `tagbackup serve [--port=PORT] [--no-open]` - start a local web server and open a browser UI for managing files. The server binds to `127.0.0.1` only. Flags:
+  - `--port=PORT` (default `3000`) - TCP port to listen on (must be between 1 and 65535). Exits with a usage error if the value is out of range, or with an error if the port is already in use.
+  - `--no-open` - print the URL but do not launch a browser.
+
+The UI is embedded in the binary via `//go:embed` from `internal/server/dist`; no separate web server or Node runtime is required at install time. The header shows the running binary version (from `/api/version`) and a link to tagbackup.com.
+
+**Browsing.** Every configured bucket alias appears as a tab (first alias selected alphabetically). An info (ℹ) button beside the tabs opens a read-only dialog showing that bucket's configuration: alias, S3 bucket name, endpoint, region, prefix, path-style and TLS options, credential type, and credential source. Inline static credentials are masked (`****` plus the last four characters). When credentials are provided via environment variables, values are omitted and a note explains that. For the selected bucket, tag filter buttons and a sortable, paginated file table show filename, size, timestamp (absolute plus relative), and tags. One tag filter may be active at a time. The browser loads all objects for a bucket in one request and performs filtering, sorting, and paging client-side (50 files per page). A footer below the table shows the total matching file count and combined size for the current filter, plus previous/next page controls.
+
+**Upload.** An Upload button reveals a drag-and-drop area (or file picker). After selecting one or more files, a dialog lets the user toggle existing bucket tags and/or enter new tags. The same tag set is applied to every file in the batch. Tags follow the same `[a-zA-Z0-9]` rules as `push`; at least one valid tag is required. Original filenames are taken from the filesystem (no renaming). Uploads run one file at a time with a progress indicator; per-file failures are ignored silently. On completion the file list refreshes.
+
+**Delete.** Checkboxes beside each row and a header select-all toggle apply to the current page only (50 files per page). Delete is disabled until at least one file is checked. A confirmation dialog shows the count; after confirmation, deletions run one object at a time with a progress indicator. Per-file failures are ignored silently. On completion the file list refreshes.
+
+**Not supported in the web UI:** editing tags on existing objects, stdin uploads, tag expressions, age filters, and bucket configuration editing.
+
+**HTTP API** (localhost only, JSON unless noted):
+
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| `GET` | `/api/version` | Running binary version |
+| `GET` | `/api/buckets` | List configured bucket aliases (sorted) |
+| `GET` | `/api/buckets/{alias}` | Read-only bucket configuration (secrets masked: `****` plus last 4 characters; env-provided credentials omit values) |
+| `GET` | `/api/buckets/{alias}/objects` | List all tagbackup objects in a bucket |
+| `POST` | `/api/buckets/{alias}/objects` | Upload one file (`multipart/form-data`: fields `file` and `tags` as a JSON array) |
+| `DELETE` | `/api/buckets/{alias}/objects` | Delete one object (JSON body `{"key":"..."}`) |
+| `GET` | `/*` | Embedded SPA static assets |
+
+Object JSON shape: `key`, `filename`, `tags` (array), `size` (bytes), `timestamp` (epoch milliseconds). Upload uses the same key format and validation as `push` (`BuildPushKey` + `Upload`).
+
+Bucket configuration JSON shape (`GET /api/buckets/{alias}`): `alias`, `bucket`, `endpoint`, `region`, `prefix` (optional), `force_path_style`, `insecure_skip_verify`, `credential_type`, `credential_source` (`env`, `static`, `profile`, or `iam`), `credentials_profile` (optional), and optionally `access_key_id` / `secret_access_key` (masked inline values only; omitted when `credential_source` is `env`).
+
+Stop the server with Ctrl+C. This command is non-interactive.
+
 # Global behaviour
 
 The flags and conventions in this section apply to every command unless explicitly overridden.

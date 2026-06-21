@@ -32,14 +32,14 @@ The Go module path is `github.com/joncombe/tagbackup`. The compiled binary is na
 - `internal/config` - YAML loading, schema validation, schema versioning, and credential resolution.
 - `internal/store` - the S3 layer: an `ObjectStore` interface plus the AWS-SDK-v2-backed implementation. Tests use a fake implementation of the interface.
 - `internal/tagexpr` - the tag expression parser and evaluator. Pure code, no external dependencies, fully unit-tested.
-- `internal/server` - the `tagbackup serve` HTTP server: a small read-only JSON API over `internal/config` and `internal/store`, plus the single-page web UI embedded from `internal/server/dist` via `//go:embed`.
+- `internal/server` - the `tagbackup serve` HTTP server: a JSON API over `internal/config` and `internal/store`, plus the single-page web UI embedded from `internal/server/dist` via `//go:embed`.
 - `web/` - the React + Vite + TypeScript source for the embedded UI. It builds into `internal/server/dist` (committed) so `go build`/`go install` need no Node toolchain.
 
 # CLI conventions
 
 The CLI follows two consistent patterns, mirroring `git`:
 
-- **Top-level verbs** for the common, frequently-used actions: `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, `tagbackup delete`.
+- **Top-level verbs** for the common, frequently-used actions: `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, `tagbackup delete`, `tagbackup serve`.
 - **Noun-then-verb subcommands** for managing configuration objects: `tagbackup bucket add|edit|delete|list|verify`.
 
 New commands introduced after v1 should follow the same convention: a top-level verb if it is a hot-path action operating on files, or `tagbackup <noun> <verb>` if it manages a longer-lived configuration object.

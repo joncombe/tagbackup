@@ -1,6 +1,6 @@
 # tagbackup
 
-Command-line tool to upload, download, list, and delete files in S3-compatible storage (for example Amazon S3, MinIO, or Cloudflare R2). Files are identified and filtered with **tags**; object keys are generated in a consistent, timestamped format. There is no separate server—only the CLI talking to the bucket you configure.
+Command-line tool to upload, download, list, and delete files in S3-compatible storage (for example Amazon S3, MinIO, or Cloudflare R2). Files are identified and filtered with **tags**; object keys are generated in a consistent, timestamped format. The CLI talks directly to the bucket you configure; optionally, `tagbackup serve` runs a local web UI on `127.0.0.1` for browsing, uploading, and deleting files.
 
 ## Install
 
@@ -77,9 +77,8 @@ To dry-run locally before tagging, run `make release-check` (validate config) or
 
 ## Quick start
 
-1. Create a `config.yaml` in the current directory (or set `TAGBACKUP_CONFIG` to its path). See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full format.
-2. Add at least one bucket under `buckets:` with an alias, `endpoint`, `region`, `bucket` name, and credentials.
-3. Run commands such as `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, and `tagbackup delete` — see [docs/USAGE.md](docs/USAGE.md) for usage and [docs/FUNCTIONALITY.md](docs/FUNCTIONALITY.md) for the full specification.
+1. Add at least one bucket with `tagbackup bucket add` (interactive), or create the config file at the default per-user path — see [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full format and file location. Pass `--config=PATH` to use a different file.
+2. Run commands such as `tagbackup push`, `tagbackup pull`, `tagbackup files`, `tagbackup tags`, `tagbackup delete`, and `tagbackup serve` — see [docs/USAGE.md](docs/USAGE.md) for usage and [docs/FUNCTIONALITY.md](docs/FUNCTIONALITY.md) for the full specification.
 
 ```sh
 ./tagbackup --help

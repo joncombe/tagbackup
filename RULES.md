@@ -7,8 +7,8 @@ alwaysApply: true
 
 `tagbackup` is a single-binary Go CLI for uploading, downloading, listing, and
 deleting files on any S3-compatible bucket, using tag-in-filename semantics.
-There is no server component and no local index — every operation lists the
-bucket.
+There is no always-on server — only the CLI (and an optional local web UI via
+`tagbackup serve`) — and no local index; every operation lists the bucket.
 
 ## Specification (authoritative)
 
@@ -22,9 +22,6 @@ them and update them when behaviour changes:
 - @docs/CONFIGURATION.md — YAML layout, file location, atomic save, 0600
   permissions, credential resolution order (env → profile → inline → default
   chain), env var name scheme.
-- @docs/RECOMMENDATIONS.md — known bugs, spec deviations, and quality
-  improvements. Consult before adding new features; prefer fixing listed
-  issues first.
 
 ## Repo layout
 
@@ -34,6 +31,9 @@ them and update them when behaviour changes:
 - `internal/store` — `ObjectStore` interface, AWS-SDK-v2 implementation, and an
   in-memory fake (`Mem`) for tests.
 - `internal/tagexpr` — tag-expression parser/evaluator (pure, well tested).
+- `internal/server` — `tagbackup serve` HTTP server and embedded web UI.
+- `web/` — React + Vite source for the embedded UI (builds into
+  `internal/server/dist`).
 - `internal/objectkey`, `internal/duration`, `internal/exitc` — small pure
   helpers.
 

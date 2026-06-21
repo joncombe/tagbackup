@@ -35,6 +35,8 @@ type Options struct {
 	ConfigPath string
 	// Debug, when non-nil, enables DEBUG logging in the store layer.
 	Debug *slog.Logger
+	// Version is the running binary version ("" means "dev").
+	Version string
 }
 
 // Server serves the web UI and its JSON API.
@@ -90,9 +92,11 @@ func (s *Server) Serve(ctx context.Context, ln net.Listener) error {
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/buckets", s.handleBuckets)
+	mux.HandleFunc("GET /api/buckets/{alias}", s.handleBucketConfig)
 	mux.HandleFunc("GET /api/buckets/{alias}/objects", s.handleObjects)
 	mux.HandleFunc("DELETE /api/buckets/{alias}/objects", s.handleDeleteObject)
 	mux.HandleFunc("POST /api/buckets/{alias}/objects", s.handleUploadObject)
+	mux.HandleFunc("GET /api/version", s.handleVersion)
 	mux.Handle("/", s.staticHandler())
 	return mux
 }
@@ -111,6 +115,35 @@ func (s *Server) handleBuckets(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Strings(aliases)
 	writeJSON(w, http.StatusOK, aliases)
+}
+
+// handleVersion returns the running binary version.
+func (s *Server) handleVersion(w http.ResponseWriter, r *http.Request) {
+	v := s.opts.Version
+	if v == "" {
+		v = "dev"
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"version": v})
+}
+
+// handleBucketConfig returns sanitized configuration for the given bucket alias.
+func (s *Server) handleBucketConfig(w http.ResponseWriter, r *http.Request) {
+	alias := r.PathValue("alias")
+	if err := config.ValidateAlias(alias); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid bucket alias")
+		return
+	}
+	cfg, _, err := config.LoadOrEmpty(s.opts.ConfigPath)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to load config")
+		return
+	}
+	bkt, err := cfg.GetBucket(alias)
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, bucketConfigFrom(alias, bkt))
 }
 
 // handleObjects lists all tagbackup objects for the given bucket alias.
