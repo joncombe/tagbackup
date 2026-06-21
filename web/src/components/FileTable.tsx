@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { FileObject, SortDirection, SortField } from "../types";
 import { formatTimestamp, humanBytes, relativeTime } from "../format";
 
@@ -7,6 +8,9 @@ interface Props {
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
   now: number;
+  checkedKeys: Set<string>;
+  onCheck: (key: string, checked: boolean) => void;
+  onCheckAll: (checked: boolean) => void;
 }
 
 interface ColumnDef {
@@ -32,11 +36,39 @@ export function FileTable({
   sortDirection,
   onSort,
   now,
+  checkedKeys,
+  onCheck,
+  onCheckAll,
 }: Props) {
+  const selectAllRef = useRef<HTMLInputElement>(null);
+  const checkedCount = rows.filter((r) => checkedKeys.has(r.key)).length;
+  const allChecked = rows.length > 0 && checkedCount === rows.length;
+  const someChecked = checkedCount > 0 && !allChecked;
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someChecked;
+    }
+  }, [someChecked]);
+
+  function toggleSelectAll() {
+    onCheckAll(!allChecked);
+  }
+
   return (
     <table className="fileTable">
       <thead>
         <tr>
+          <th className="colCheck">
+            <input
+              ref={selectAllRef}
+              type="checkbox"
+              className="rowCheck"
+              checked={allChecked}
+              aria-label="Select all files on this page"
+              onChange={toggleSelectAll}
+            />
+          </th>
           {COLUMNS.map((c) => {
             const active = sortField === c.field;
             return (
@@ -65,6 +97,15 @@ export function FileTable({
       <tbody>
         {rows.map((o) => (
           <tr key={o.key}>
+            <td className="colCheck">
+              <input
+                type="checkbox"
+                className="rowCheck"
+                checked={checkedKeys.has(o.key)}
+                aria-label={`Select ${o.filename}`}
+                onChange={(e) => onCheck(o.key, e.target.checked)}
+              />
+            </td>
             <td className="cellName">{o.filename}</td>
             <td className="colSize">{humanBytes(o.size)}</td>
             <td className="colTime">

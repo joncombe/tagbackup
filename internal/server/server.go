@@ -1,23 +1,26 @@
-// Package server implements the local, read-only web UI served by
-// `tagbackup serve`. It exposes a small JSON API over the existing config and
-// object-store layers and serves an embedded single-page application.
+// Package server implements the local web UI served by `tagbackup serve`. It
+// exposes a small JSON API over the existing config and object-store layers
+// and serves an embedded single-page application.
 package server
 
 import (
 	"context"
 	"embed"
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
 	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/joncombe/tagbackup/internal/config"
+	"github.com/joncombe/tagbackup/internal/objectkey"
 	"github.com/joncombe/tagbackup/internal/store"
 )
 
@@ -34,9 +37,13 @@ type Options struct {
 	Debug *slog.Logger
 }
 
-// Server serves the read-only web UI and its JSON API.
+// Server serves the web UI and its JSON API.
 type Server struct {
 	opts Options
+}
+
+type deleteObjectRequest struct {
+	Key string `json:"key"`
 }
 
 // New returns a Server with the given options.
@@ -84,6 +91,8 @@ func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/buckets", s.handleBuckets)
 	mux.HandleFunc("GET /api/buckets/{alias}/objects", s.handleObjects)
+	mux.HandleFunc("DELETE /api/buckets/{alias}/objects", s.handleDeleteObject)
+	mux.HandleFunc("POST /api/buckets/{alias}/objects", s.handleUploadObject)
 	mux.Handle("/", s.staticHandler())
 	return mux
 }
@@ -106,27 +115,9 @@ func (s *Server) handleBuckets(w http.ResponseWriter, r *http.Request) {
 
 // handleObjects lists all tagbackup objects for the given bucket alias.
 func (s *Server) handleObjects(w http.ResponseWriter, r *http.Request) {
-	alias := r.PathValue("alias")
-	if err := config.ValidateAlias(alias); err != nil {
-		writeJSONError(w, http.StatusBadRequest, "invalid bucket alias")
-		return
-	}
-	cfg, _, err := config.LoadOrEmpty(s.opts.ConfigPath)
+	_, st, err := s.objectStoreForAlias(w, r)
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "failed to load config")
 		return
-	}
-	if _, err := cfg.GetBucket(alias); err != nil {
-		writeJSONError(w, http.StatusNotFound, err.Error())
-		return
-	}
-	st, err := store.NewObjectStoreFromAlias(r.Context(), cfg, alias, s.opts.Debug)
-	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	if s.opts.Debug != nil {
-		st.SetDebugLog(s.opts.Debug)
 	}
 	objs, err := st.ListObjectsAll(r.Context(), func(map[string]struct{}) bool { return true })
 	if err != nil {
@@ -144,6 +135,145 @@ func (s *Server) handleObjects(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+func (s *Server) objectStoreForAlias(w http.ResponseWriter, r *http.Request) (string, store.ObjectStore, error) {
+	alias := r.PathValue("alias")
+	if err := config.ValidateAlias(alias); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid bucket alias")
+		return "", nil, err
+	}
+	cfg, _, err := config.LoadOrEmpty(s.opts.ConfigPath)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to load config")
+		return "", nil, err
+	}
+	if _, err := cfg.GetBucket(alias); err != nil {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return "", nil, err
+	}
+	st, err := store.NewObjectStoreFromAlias(r.Context(), cfg, alias, s.opts.Debug)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		return "", nil, err
+	}
+	if s.opts.Debug != nil {
+		st.SetDebugLog(s.opts.Debug)
+	}
+	return alias, st, nil
+}
+
+func (s *Server) handleDeleteObject(w http.ResponseWriter, r *http.Request) {
+	var req deleteObjectRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if req.Key == "" {
+		writeJSONError(w, http.StatusBadRequest, "key is required")
+		return
+	}
+	_, st, err := s.objectStoreForAlias(w, r)
+	if err != nil {
+		return
+	}
+	if err := st.DeleteObject(r.Context(), req.Key); err != nil {
+		writeJSONError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handleUploadObject(w http.ResponseWriter, r *http.Request) {
+	alias, st, err := s.objectStoreForAlias(w, r)
+	if err != nil {
+		return
+	}
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid multipart form")
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "file is required")
+		return
+	}
+	defer file.Close()
+
+	tagsJSON := r.FormValue("tags")
+	var tags []string
+	if err := json.Unmarshal([]byte(tagsJSON), &tags); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid tags")
+		return
+	}
+	if len(tags) == 0 {
+		writeJSONError(w, http.StatusBadRequest, "at least one tag is required")
+		return
+	}
+	for _, t := range tags {
+		if err := objectkey.ValidateTag(t); err != nil {
+			writeJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	filename := filepath.Base(header.Filename)
+	if filename == "" || filename == "." {
+		writeJSONError(w, http.StatusBadRequest, "invalid filename")
+		return
+	}
+
+	key, err := st.BuildPushKey(filename, tags)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := st.Upload(r.Context(), key, file, header.Size); err != nil {
+		writeJSONError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+
+	cfg, _, err := config.LoadOrEmpty(s.opts.ConfigPath)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to load config")
+		return
+	}
+	bkt, err := cfg.GetBucket(alias)
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	dto, err := objectDTOFromKey(key, bkt.Prefix, header.Size)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, dto)
+}
+
+func objectDTOFromKey(key, prefix string, size int64) (objectDTO, error) {
+	np := prefix
+	if np != "" && !strings.HasSuffix(np, "/") {
+		np += "/"
+	}
+	rel := key
+	if np != "" {
+		if !strings.HasPrefix(key, np) {
+			return objectDTO{}, fmt.Errorf("key %q does not match bucket prefix", key)
+		}
+		rel = strings.TrimPrefix(key, np)
+	}
+	parsed, err := objectkey.Parse(rel)
+	if err != nil {
+		return objectDTO{}, err
+	}
+	return objectDTO{
+		Key:       key,
+		Filename:  parsed.DisplayName,
+		Tags:      parsed.Tags,
+		Size:      size,
+		Timestamp: parsed.Timestamp,
+	}, nil
 }
 
 // staticHandler serves the embedded SPA, falling back to index.html for any

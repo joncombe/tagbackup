@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchBuckets, fetchObjects } from "./api";
 import type { FileObject, SortDirection, SortField } from "./types";
 import { BucketTabs } from "./components/BucketTabs";
 import { TagFilters } from "./components/TagFilters";
 import { FileTable } from "./components/FileTable";
 import { Pagination } from "./components/Pagination";
+import { DeleteModal } from "./components/DeleteModal";
+import { UploadDropZone } from "./components/UploadDropZone";
+import { UploadModal } from "./components/UploadModal";
 
 const PAGE_SIZE = 50;
 
@@ -31,6 +34,12 @@ export function App() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
 
+  const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDropZone, setShowDropZone] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
   // A single "now" snapshot keeps relative times stable across a render and
   // refreshes them every minute.
   const [now, setNow] = useState(() => Date.now());
@@ -50,6 +59,19 @@ export function App() {
       );
   }, []);
 
+  const reloadObjects = useCallback(async (alias: string) => {
+    setLoadingObjects(true);
+    setObjectsError(null);
+    try {
+      const list = await fetchObjects(alias);
+      setObjects(list);
+    } catch (e: unknown) {
+      setObjectsError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingObjects(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!selected) return;
     let cancelled = false;
@@ -57,6 +79,11 @@ export function App() {
     setObjectsError(null);
     setSelectedTag(null);
     setPage(1);
+    setCheckedKeys(new Set());
+    setShowDropZone(false);
+    setPendingFiles([]);
+    setShowUploadModal(false);
+    setShowDeleteModal(false);
     fetchObjects(selected)
       .then((list) => {
         if (!cancelled) setObjects(list);
@@ -72,6 +99,10 @@ export function App() {
       cancelled = true;
     };
   }, [selected]);
+
+  useEffect(() => {
+    setCheckedKeys(new Set());
+  }, [selectedTag, page]);
 
   const tags = useMemo(() => {
     const set = new Set<string>();
@@ -114,6 +145,8 @@ export function App() {
     return sorted.slice(start, start + PAGE_SIZE);
   }, [sorted, currentPage]);
 
+  const keysToDelete = [...checkedKeys];
+
   function selectTag(tag: string) {
     setSelectedTag((prev) => (prev === tag ? null : tag));
     setPage(1);
@@ -132,6 +165,45 @@ export function App() {
   function changePage(next: number) {
     setPage(next);
     window.scrollTo(0, 0);
+  }
+
+  function handleCheck(key: string, checked: boolean) {
+    setCheckedKeys((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  }
+
+  function handleCheckAll(checked: boolean) {
+    if (!checked) {
+      setCheckedKeys(new Set());
+      return;
+    }
+    setCheckedKeys(new Set(pageRows.map((r) => r.key)));
+  }
+
+  function handleUploadClick() {
+    setShowDropZone(true);
+  }
+
+  function handleFilesSelected(files: File[]) {
+    setPendingFiles(files);
+    setShowUploadModal(true);
+  }
+
+  async function handleDeleteComplete() {
+    setShowDeleteModal(false);
+    setCheckedKeys(new Set());
+    if (selected) await reloadObjects(selected);
+  }
+
+  async function handleUploadComplete() {
+    setShowUploadModal(false);
+    setShowDropZone(false);
+    setPendingFiles([]);
+    if (selected) await reloadObjects(selected);
   }
 
   return (
@@ -171,7 +243,14 @@ export function App() {
               tags={tags}
               selected={selectedTag}
               onSelect={selectTag}
+              checkedCount={checkedKeys.size}
+              onUploadClick={handleUploadClick}
+              onDeleteClick={() => setShowDeleteModal(true)}
             />
+
+            {showDropZone && (
+              <UploadDropZone onFilesSelected={handleFilesSelected} />
+            )}
 
             {loadingObjects && <div className="empty">Loading files…</div>}
 
@@ -196,6 +275,9 @@ export function App() {
                 sortDirection={sortDirection}
                 onSort={onSort}
                 now={now}
+                checkedKeys={checkedKeys}
+                onCheck={handleCheck}
+                onCheckAll={handleCheckAll}
               />
             )}
           </>
@@ -209,6 +291,28 @@ export function App() {
           total={sorted.length}
           totalBytes={totalBytes}
           onPageChange={changePage}
+        />
+      )}
+
+      {showDeleteModal && selected && (
+        <DeleteModal
+          alias={selected}
+          keys={keysToDelete}
+          onClose={() => setShowDeleteModal(false)}
+          onComplete={() => void handleDeleteComplete()}
+        />
+      )}
+
+      {showUploadModal && selected && pendingFiles.length > 0 && (
+        <UploadModal
+          alias={selected}
+          files={pendingFiles}
+          existingTags={tags}
+          onClose={() => {
+            setShowUploadModal(false);
+            setPendingFiles([]);
+          }}
+          onComplete={() => void handleUploadComplete()}
         />
       )}
     </div>
