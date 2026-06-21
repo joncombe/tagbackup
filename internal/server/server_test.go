@@ -203,6 +203,33 @@ func TestObjectsInvalidAliasReturns400(t *testing.T) {
 	}
 }
 
+func TestDownloadObjectMissingKeyReturns400(t *testing.T) {
+	srv := newTestServer(writeConfig(t, "alpha"))
+	rr := httptest.NewRecorder()
+	srv.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/api/buckets/alpha/objects/download", nil))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", rr.Code)
+	}
+}
+
+func TestDownloadObjectUnknownBucketReturns404(t *testing.T) {
+	srv := newTestServer(writeConfig(t, "alpha"))
+	rr := httptest.NewRecorder()
+	srv.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/api/buckets/nope/objects/download?key=some-key", nil))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rr.Code)
+	}
+}
+
+func TestDownloadObjectInvalidAliasReturns400(t *testing.T) {
+	srv := newTestServer(writeConfig(t, "alpha"))
+	rr := httptest.NewRecorder()
+	srv.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/api/buckets/bad%20alias/objects/download?key=some-key", nil))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", rr.Code)
+	}
+}
+
 func TestStaticServesIndex(t *testing.T) {
 	srv := newTestServer(filepath.Join(t.TempDir(), "none.yaml"))
 	rr := httptest.NewRecorder()

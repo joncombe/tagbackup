@@ -8,6 +8,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net"
@@ -94,6 +95,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /api/buckets", s.handleBuckets)
 	mux.HandleFunc("GET /api/buckets/{alias}", s.handleBucketConfig)
 	mux.HandleFunc("GET /api/buckets/{alias}/objects", s.handleObjects)
+	mux.HandleFunc("GET /api/buckets/{alias}/objects/download", s.handleDownloadObject)
 	mux.HandleFunc("DELETE /api/buckets/{alias}/objects", s.handleDeleteObject)
 	mux.HandleFunc("POST /api/buckets/{alias}/objects", s.handleUploadObject)
 	mux.HandleFunc("GET /api/version", s.handleVersion)
@@ -168,6 +170,48 @@ func (s *Server) handleObjects(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+func (s *Server) handleDownloadObject(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("key")
+	if key == "" {
+		writeJSONError(w, http.StatusBadRequest, "key is required")
+		return
+	}
+	alias, st, err := s.objectStoreForAlias(w, r)
+	if err != nil {
+		return
+	}
+	rc, size, err := st.GetObjectReader(r.Context(), key)
+	if err != nil {
+		writeJSONError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	defer rc.Close()
+
+	cfg, _, err := config.LoadOrEmpty(s.opts.ConfigPath)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to load config")
+		return
+	}
+	bkt, err := cfg.GetBucket(alias)
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	dto, err := objectDTOFromKey(key, bkt.Prefix, size)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename=%q`, dto.Filename))
+	if size > 0 {
+		w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(w, rc)
 }
 
 func (s *Server) objectStoreForAlias(w http.ResponseWriter, r *http.Request) (string, store.ObjectStore, error) {

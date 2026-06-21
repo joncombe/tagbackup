@@ -6,6 +6,7 @@ import { TagFilters } from "./components/TagFilters";
 import { FileTable } from "./components/FileTable";
 import { Pagination } from "./components/Pagination";
 import { DeleteModal } from "./components/DeleteModal";
+import { DeleteHintModal } from "./components/DeleteHintModal";
 import { BucketInfoModal } from "./components/BucketInfoModal";
 import { UploadDropZone } from "./components/UploadDropZone";
 import { UploadModal } from "./components/UploadModal";
@@ -37,6 +38,7 @@ export function App() {
 
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteHintModal, setShowDeleteHintModal] = useState(false);
   const [showDropZone, setShowDropZone] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -95,6 +97,7 @@ export function App() {
     setPendingFiles([]);
     setShowUploadModal(false);
     setShowDeleteModal(false);
+    setShowDeleteHintModal(false);
     fetchObjects(selected)
       .then((list) => {
         if (!cancelled) setObjects(list);
@@ -203,12 +206,24 @@ export function App() {
   }
 
   function handleUploadClick() {
-    setShowDropZone(true);
+    if (showDropZone && pendingFiles.length === 0) {
+      setShowDropZone(false);
+    } else {
+      setShowDropZone(true);
+    }
   }
 
   function handleFilesSelected(files: File[]) {
     setPendingFiles(files);
     setShowUploadModal(true);
+  }
+
+  function handleDeleteClick() {
+    if (checkedKeys.size === 0) {
+      setShowDeleteHintModal(true);
+      return;
+    }
+    setShowDeleteModal(true);
   }
 
   async function handleDeleteComplete() {
@@ -228,17 +243,6 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <span className="wordmark">tagbackup</span>
-        <div className="topbarMeta">
-          {appVersion && <span className="topbarVersion">v{appVersion}</span>}
-          <a
-            className="topbarLink"
-            href="https://tagbackup.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            tagbackup.com
-          </a>
-        </div>
       </header>
 
       {buckets !== null && buckets.length > 0 && (
@@ -273,9 +277,9 @@ export function App() {
               tags={tags}
               selected={selectedTag}
               onSelect={selectTag}
-              checkedCount={checkedKeys.size}
+              uploadActive={showDropZone}
               onUploadClick={handleUploadClick}
-              onDeleteClick={() => setShowDeleteModal(true)}
+              onDeleteClick={handleDeleteClick}
             />
 
             {showDropZone && (
@@ -301,6 +305,7 @@ export function App() {
             {!loadingObjects && !objectsError && sorted.length > 0 && (
               <FileTable
                 rows={pageRows}
+                bucketAlias={selected}
                 sortField={sortField}
                 sortDirection={sortDirection}
                 onSort={onSort}
@@ -314,21 +319,25 @@ export function App() {
         )}
       </main>
 
-      {selected && !loadingObjects && !objectsError && (
-        <Pagination
-          page={currentPage}
-          pageCount={pageCount}
-          total={sorted.length}
-          totalBytes={totalBytes}
-          onPageChange={changePage}
-        />
-      )}
+      <Pagination
+        page={currentPage}
+        pageCount={pageCount}
+        total={sorted.length}
+        totalBytes={totalBytes}
+        onPageChange={changePage}
+        appVersion={appVersion}
+        showPageData={Boolean(selected && !loadingObjects && !objectsError)}
+      />
 
       {showInfoModal && selected && (
         <BucketInfoModal
           alias={selected}
           onClose={() => setShowInfoModal(false)}
         />
+      )}
+
+      {showDeleteHintModal && (
+        <DeleteHintModal onClose={() => setShowDeleteHintModal(false)} />
       )}
 
       {showDeleteModal && selected && (

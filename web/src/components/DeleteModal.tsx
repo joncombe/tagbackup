@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Trash2, X } from "lucide-react";
 import { deleteObject } from "../api";
 
 interface Props {
@@ -63,6 +64,7 @@ export function DeleteModal({ alias, keys, onClose, onComplete }: Props) {
             </p>
             <div className="modalActions">
               <button type="button" className="btnSecondary" onClick={onClose}>
+                <X size={14} aria-hidden="true" />
                 Cancel
               </button>
               <button
@@ -70,6 +72,7 @@ export function DeleteModal({ alias, keys, onClose, onComplete }: Props) {
                 className="btnDanger"
                 onClick={() => setPhase("deleting")}
               >
+                <Trash2 size={14} aria-hidden="true" />
                 Delete
               </button>
             </div>

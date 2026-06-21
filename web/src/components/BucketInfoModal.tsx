@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { fetchBucketConfig } from "../api";
 import type { BucketConfig } from "../types";
 
@@ -133,6 +134,7 @@ export function BucketInfoModal({ alias, onClose }: Props) {
 
         <div className="modalActions">
           <button type="button" className="btnSecondary" onClick={onClose}>
+            <X size={14} aria-hidden="true" />
             Close
           </button>
         </div>

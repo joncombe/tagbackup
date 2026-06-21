@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Upload, X } from "lucide-react";
 import { uploadObject } from "../api";
 
 interface Props {
@@ -162,6 +163,7 @@ export function UploadModal({
 
             <div className="modalActions">
               <button type="button" className="btnSecondary" onClick={onClose}>
+                <X size={14} aria-hidden="true" />
                 Cancel
               </button>
               <button
@@ -170,6 +172,7 @@ export function UploadModal({
                 disabled={!canSubmit}
                 onClick={startUpload}
               >
+                <Upload size={14} aria-hidden="true" />
                 Upload
               </button>
             </div>

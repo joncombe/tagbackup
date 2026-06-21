@@ -1,9 +1,12 @@
 import { useEffect, useRef } from "react";
+import { ChevronDown, ChevronUp, Download, Tag } from "lucide-react";
+import { objectDownloadURL } from "../api";
 import type { FileObject, SortDirection, SortField } from "../types";
 import { formatTimestamp, humanBytes, relativeTime } from "../format";
 
 interface Props {
   rows: FileObject[];
+  bucketAlias: string;
   sortField: SortField;
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
@@ -25,13 +28,21 @@ const COLUMNS: ColumnDef[] = [
   { field: "timestamp", label: "Timestamp", className: "colTime" },
 ];
 
-function sortIndicator(active: boolean, dir: SortDirection): string {
-  if (!active) return "";
-  return dir === "asc" ? " \u2191" : " \u2193";
+function SortIndicator({
+  active,
+  direction,
+}: {
+  active: boolean;
+  direction: SortDirection;
+}) {
+  if (!active) return null;
+  const Icon = direction === "asc" ? ChevronUp : ChevronDown;
+  return <Icon className="sortIcon" size={14} aria-hidden="true" />;
 }
 
 export function FileTable({
   rows,
+  bucketAlias,
   sortField,
   sortDirection,
   onSort,
@@ -56,7 +67,8 @@ export function FileTable({
   }
 
   return (
-    <table className="fileTable">
+    <div className="fileTableScroll">
+      <table className="fileTable">
       <thead>
         <tr>
           <th className="colCheck">
@@ -86,12 +98,13 @@ export function FileTable({
                   onClick={() => onSort(c.field)}
                 >
                   {c.label}
-                  {sortIndicator(active, sortDirection)}
+                  <SortIndicator active={active} direction={sortDirection} />
                 </button>
               </th>
             );
           })}
           <th className="colTags">Tags</th>
+          <th className="colDownload" aria-label="Download" />
         </tr>
       </thead>
       <tbody>
@@ -116,14 +129,26 @@ export function FileTable({
               <span className="tagList">
                 {o.tags.map((t) => (
                   <span key={t} className="tagPill">
+                    <Tag size={12} aria-hidden="true" />
                     {t}
                   </span>
                 ))}
               </span>
             </td>
+            <td className="colDownload">
+              <a
+                href={objectDownloadURL(bucketAlias, o.key)}
+                download={o.filename}
+                className="downloadBtn"
+                aria-label={`Download ${o.filename}`}
+              >
+                <Download size={16} aria-hidden="true" />
+              </a>
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

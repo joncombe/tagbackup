@@ -45,6 +45,11 @@ export function fetchObjects(alias: string): Promise<FileObject[]> {
   );
 }
 
+export function objectDownloadURL(alias: string, key: string): string {
+  const params = new URLSearchParams({ key });
+  return `/api/buckets/${encodeURIComponent(alias)}/objects/download?${params}`;
+}
+
 export async function deleteObject(alias: string, key: string): Promise<void> {
   const res = await fetch(`/api/buckets/${encodeURIComponent(alias)}/objects`, {
     method: "DELETE",
