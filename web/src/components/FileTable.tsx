@@ -26,7 +26,13 @@ function sortIndicator(active: boolean, dir: SortDirection): string {
   return dir === "asc" ? " \u2191" : " \u2193";
 }
 
-export function FileTable({ rows, sortField, sortDirection, onSort, now }: Props) {
+export function FileTable({
+  rows,
+  sortField,
+  sortDirection,
+  onSort,
+  now,
+}: Props) {
   return (
     <table className="fileTable">
       <thead>

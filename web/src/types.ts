@@ -9,4 +9,3 @@ export interface FileObject {
 
 export type SortField = "filename" | "size" | "timestamp";
 export type SortDirection = "asc" | "desc";
-export type FilterMode = "or" | "and";

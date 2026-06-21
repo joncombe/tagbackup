@@ -29,6 +29,9 @@ func NewS3Client(ctx context.Context, alias string, b config.Bucket, debug *slog
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(ep)
 		o.UsePathStyle = b.ForcePathStyle
+		// Multipart uploads (used by push) expose composite checksums the SDK
+		// cannot validate on GetObject; suppress the harmless WARN line.
+		o.DisableLogOutputChecksumValidationSkipped = true
 		if debug != nil {
 			o.Retryer = newLoggingRetryer(debug)
 		}

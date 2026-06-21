@@ -78,17 +78,6 @@ code {
   letter-spacing: -0.01em;
 }
 
-.readonlyBadge {
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text3);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 2px 7px;
-}
-
 /* Bucket tabs */
 .tabs {
   display: flex;
@@ -132,7 +121,6 @@ code {
 .tagFilters {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 16px;
   margin-bottom: 1.25rem;
 }
@@ -141,48 +129,6 @@ code {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.tagFilterControls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-/* OR / AND segmented toggle */
-.modeToggle {
-  display: inline-flex;
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.modeOption {
-  appearance: none;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text2);
-  background: transparent;
-  border: none;
-  padding: 5px 12px;
-  cursor: pointer;
-  transition:
-    color 0.12s ease,
-    background 0.12s ease;
-}
-
-.modeOption + .modeOption {
-  border-left: 1px solid var(--border2);
-}
-
-.modeOption:hover {
-  color: var(--text);
-}
-
-.modeOptionActive {
-  color: var(--accent);
-  background: var(--accent-dim);
 }
 
 .tagFilter {
@@ -210,21 +156,6 @@ code {
   color: var(--accent);
   background: var(--accent-dim);
   border-color: var(--accent2);
-}
-
-.tagClear {
-  appearance: none;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  background: transparent;
-  border: none;
-  padding: 5px 6px;
-  cursor: pointer;
-}
-
-.tagClear:hover {
-  color: var(--red);
 }
 
 /* File table */
@@ -377,8 +308,10 @@ code {
 }
 
 .pageControls {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -410,27 +343,6 @@ code {
   text-align: center;
 }
 
-.pageSize {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.pageSize select {
-  appearance: none;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text2);
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 6px 28px 6px 12px;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%238f9a8f' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
-
 @media (max-width: 767px) {
   .topbar,
   .tabs,
@@ -443,10 +355,6 @@ code {
   .tagFilters {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .tagFilterControls {
-    justify-content: flex-end;
   }
 
   .relTime {

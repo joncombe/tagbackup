@@ -295,7 +295,7 @@ Behaviour:
 
 - The server binds to **`127.0.0.1` only** — it is never exposed on your network. Even so, treat it as you would any local listing of your filenames.
 - Unlike the file commands, `serve` does **not** take `--bucket`; every configured bucket appears as a tab. The first alias (alphabetically) is selected automatically. With no buckets configured, the page shows a "no buckets" message.
-- For the selected bucket you get the available tags as filter buttons, and a table of files (filename, size, timestamp with a relative "… ago", and tags). Click column headers to sort; click tags to filter. A match-mode toggle controls how multiple selected tags combine: **OR** (the default) shows files with **any** of the selected tags, while **AND** narrows to files that have **all** of them. Results are paginated.
+- For the selected bucket you get the available tags as filter buttons, and a table of files (filename, size, timestamp with a relative "… ago", and tags). Click column headers to sort. Click a tag filter button to show only files with that tag; click it again to show all files. Only one tag can be active at a time. Results are paginated.
 - The view loads all of a bucket's objects once and does filtering, sorting, and paging in the browser, so a very large bucket may take a moment to load.
 - It is read-only for now; uploading, deleting, and editing tags may come in a future release.
 - Stop the server with **Ctrl+C**.

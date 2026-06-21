@@ -1,17 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchBuckets, fetchObjects } from "./api";
-import type {
-  FileObject,
-  FilterMode,
-  SortDirection,
-  SortField,
-} from "./types";
+import type { FileObject, SortDirection, SortField } from "./types";
 import { BucketTabs } from "./components/BucketTabs";
 import { TagFilters } from "./components/TagFilters";
 import { FileTable } from "./components/FileTable";
 import { Pagination } from "./components/Pagination";
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 250];
+const PAGE_SIZE = 50;
 
 function defaultDirection(field: SortField): SortDirection {
   // Newest-first and largest-first read more naturally as the initial sort.
@@ -27,12 +22,14 @@ export function App() {
   const [loadingObjects, setLoadingObjects] = useState(false);
   const [objectsError, setObjectsError] = useState<string | null>(null);
 
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
-  const [filterMode, setFilterMode] = useState<FilterMode>("or");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("timestamp");
+
+  useEffect(() => {
+    document.title = selected ? `tagbackup | ${selected}` : "tagbackup";
+  }, [selected]);
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   // A single "now" snapshot keeps relative times stable across a render and
   // refreshes them every minute.
@@ -58,7 +55,7 @@ export function App() {
     let cancelled = false;
     setLoadingObjects(true);
     setObjectsError(null);
-    setSelectedTags(new Set());
+    setSelectedTag(null);
     setPage(1);
     fetchObjects(selected)
       .then((list) => {
@@ -83,17 +80,9 @@ export function App() {
   }, [objects]);
 
   const filtered = useMemo(() => {
-    if (selectedTags.size === 0) return objects;
-    return objects.filter((o) => {
-      const have = new Set(o.tags);
-      if (filterMode === "or") {
-        for (const t of selectedTags) if (have.has(t)) return true;
-        return false;
-      }
-      for (const t of selectedTags) if (!have.has(t)) return false;
-      return true;
-    });
-  }, [objects, selectedTags, filterMode]);
+    if (selectedTag === null) return objects;
+    return objects.filter((o) => o.tags.includes(selectedTag));
+  }, [objects, selectedTag]);
 
   const sorted = useMemo(() => {
     const copy = [...filtered];
@@ -113,25 +102,20 @@ export function App() {
     return copy;
   }, [filtered, sortField, sortDirection]);
 
-  const pageCount = Math.max(Math.ceil(sorted.length / pageSize), 1);
+  const totalBytes = useMemo(
+    () => filtered.reduce((sum, o) => sum + o.size, 0),
+    [filtered],
+  );
+
+  const pageCount = Math.max(Math.ceil(sorted.length / PAGE_SIZE), 1);
   const currentPage = Math.min(page, pageCount);
   const pageRows = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return sorted.slice(start, start + pageSize);
-  }, [sorted, currentPage, pageSize]);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return sorted.slice(start, start + PAGE_SIZE);
+  }, [sorted, currentPage]);
 
-  function toggleTag(tag: string) {
-    setSelectedTags((prev) => {
-      const next = new Set(prev);
-      if (next.has(tag)) next.delete(tag);
-      else next.add(tag);
-      return next;
-    });
-    setPage(1);
-  }
-
-  function changeFilterMode(mode: FilterMode) {
-    setFilterMode(mode);
+  function selectTag(tag: string) {
+    setSelectedTag((prev) => (prev === tag ? null : tag));
     setPage(1);
   }
 
@@ -145,11 +129,15 @@ export function App() {
     setPage(1);
   }
 
+  function changePage(next: number) {
+    setPage(next);
+    window.scrollTo(0, 0);
+  }
+
   return (
     <div className="app">
       <header className="topbar">
         <span className="wordmark">tagbackup</span>
-        <span className="readonlyBadge">read-only</span>
       </header>
 
       {buckets !== null && buckets.length > 0 && (
@@ -162,7 +150,9 @@ export function App() {
 
       <main className="content">
         {bucketsError && (
-          <div className="empty error">Failed to load buckets: {bucketsError}</div>
+          <div className="empty error">
+            Failed to load buckets: {bucketsError}
+          </div>
         )}
 
         {!bucketsError && buckets !== null && buckets.length === 0 && (
@@ -179,14 +169,8 @@ export function App() {
           <>
             <TagFilters
               tags={tags}
-              selected={selectedTags}
-              mode={filterMode}
-              onToggle={toggleTag}
-              onModeChange={changeFilterMode}
-              onClear={() => {
-                setSelectedTags(new Set());
-                setPage(1);
-              }}
+              selected={selectedTag}
+              onSelect={selectTag}
             />
 
             {loadingObjects && <div className="empty">Loading files…</div>}
@@ -201,7 +185,7 @@ export function App() {
               <div className="empty">
                 {objects.length === 0
                   ? "No files in this bucket."
-                  : "No files match the selected tags."}
+                  : "No files match the selected tag."}
               </div>
             )}
 
@@ -222,14 +206,9 @@ export function App() {
         <Pagination
           page={currentPage}
           pageCount={pageCount}
-          pageSize={pageSize}
           total={sorted.length}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          onPageChange={setPage}
-          onPageSizeChange={(s) => {
-            setPageSize(s);
-            setPage(1);
-          }}
+          totalBytes={totalBytes}
+          onPageChange={changePage}
         />
       )}
     </div>

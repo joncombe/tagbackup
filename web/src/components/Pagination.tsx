@@ -1,27 +1,27 @@
+import { humanBytes } from "../format";
+
 interface Props {
   page: number;
   pageCount: number;
-  pageSize: number;
   total: number;
-  pageSizeOptions: number[];
+  totalBytes: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
 }
 
 export function Pagination({
   page,
   pageCount,
-  pageSize,
   total,
-  pageSizeOptions,
+  totalBytes,
   onPageChange,
-  onPageSizeChange,
 }: Props) {
   const safePageCount = Math.max(pageCount, 1);
   return (
     <footer className="pagination">
       <div className="pageInfo">
-        {total === 0 ? "No files" : `${total} file${total === 1 ? "" : "s"}`}
+        {total === 0
+          ? "No files"
+          : `${total} file${total === 1 ? "" : "s"} · ${humanBytes(totalBytes)}`}
       </div>
       <div className="pageControls">
         <button
@@ -46,19 +46,6 @@ export function Pagination({
           &rarr;
         </button>
       </div>
-      <label className="pageSize">
-        <select
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          aria-label="Rows per page"
-        >
-          {pageSizeOptions.map((n) => (
-            <option key={n} value={n}>
-              {n} per page
-            </option>
-          ))}
-        </select>
-      </label>
     </footer>
   );
 }
