@@ -74,11 +74,9 @@ code {
 }
 
 .wordmark {
-  font-family: var(--mono);
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--accent);
-  letter-spacing: -0.01em;
+  display: block;
+  height: 24px;
+  width: auto;
 }
 
 /* Bucket tabs */

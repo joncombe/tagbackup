@@ -242,7 +242,13 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="wordmark">tagbackup</span>
+        <img
+          className="wordmark"
+          src="/logo.svg"
+          alt="tagbackup"
+          width={114}
+          height={24}
+        />
       </header>
 
       {buckets !== null && buckets.length > 0 && (
