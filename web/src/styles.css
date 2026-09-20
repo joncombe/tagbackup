@@ -17,7 +17,7 @@
   --serif: "Fraunces", Georgia, serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --topbar-h: 52px;
+  --topbar-h: 48px;
   --pagination-h: 56px;
   --footer-inline-gap: 12px;
 }
@@ -75,8 +75,10 @@ code {
 
 .wordmark {
   display: block;
-  height: 24px;
+  height: 20px;
   width: auto;
+  margin-left: 4px;
+  opacity: 0.8;
 }
 
 /* Bucket tabs */

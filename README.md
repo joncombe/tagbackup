@@ -1,6 +1,8 @@
 <div align="center">
+  <img src="docs/images/logo.png" alt="tagbackup web UI" width="420">
+</div>
 
-# tagbackup
+<div align="center">
 
 **Backup files to S3-compatible buckets with human-readable tags.**
 

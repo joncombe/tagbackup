@@ -246,8 +246,8 @@ export function App() {
           className="wordmark"
           src="/logo.svg"
           alt="tagbackup"
-          width={114}
-          height={24}
+          width={109}
+          height={20}
         />
       </header>
 
