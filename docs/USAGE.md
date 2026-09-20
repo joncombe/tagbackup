@@ -77,6 +77,20 @@ tagbackup.exe --version
 
 Optional: verify the zip’s SHA-256 using the line for that `.zip` in `tagbackup_<version>_checksums.txt` together with `Get-FileHash` in PowerShell or a third-party checksum tool.
 
+### Upgrading
+
+Check your version with `tagbackup --version`.
+
+**Linux / macOS** — re-run the installer; it downloads the latest release and overwrites the binary:
+
+```sh
+curl -sfL https://tagbackup.com/install.sh | sh
+```
+
+**Windows** — download the latest `.zip` from [GitHub Releases](https://github.com/joncombe/tagbackup/releases), extract it, and replace your existing `tagbackup.exe` with the new one (same folder on your `PATH`).
+
+Your config and bucket aliases are unchanged. Confirm with `tagbackup --version`.
+
 ---
 
 ## Concepts

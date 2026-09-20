@@ -18,7 +18,7 @@ Upload, download, list, and delete files — identified and filtered by simple t
 
 <div align="center">
 
-[Website](https://tagbackup.com/) · [Documentation](https://tagbackup.com/docs/) · [Releases](https://github.com/joncombe/tagbackup/releases) · [Motivation](https://www.joncom.be/projects/tagbackup/)
+[Website](https://tagbackup.com/) · [Documentation](https://tagbackup.com/docs/) · [Guides](https://tagbackup.com/guides/) · [Releases](https://github.com/joncombe/tagbackup/releases) · [Motivation](https://www.joncom.be/projects/tagbackup/)
 
 </div>
 
@@ -26,7 +26,15 @@ Upload, download, list, and delete files — identified and filtered by simple t
 
 tagbackup is a single-binary CLI tool that uploads, downloads, lists, and deletes files on any S3-compatible bucket — with files identified and filtered by simple human-readable tags baked directly into the object key. No external index. No database. No telemetry.
 
-Tags travel with the file, not beside it. Combine them with `AND`, `OR`, and `NOT` expressions to pull exactly the files you need.
+These are human-readable tags embedded in the object key — not AWS S3 object tags. No separate tag API, no index to keep in sync. Tags travel with the file, not beside it. Combine them with `AND`, `OR`, and `NOT` expressions to pull exactly the files you need.
+
+---
+
+## What it is (and isn't)
+
+tagbackup is for tagged single-file dumps and restores on any S3-compatible bucket — think `pg_dump` → push → pull `--latest` on a laptop.
+
+It is **not** a full encrypted backup suite like [restic](https://restic.net/), and **not** a sync tool like [rclone](https://rclone.org/). Credentials stay on your machine; there is no hosted service.
 
 ---
 
@@ -68,6 +76,8 @@ curl -sfL https://tagbackup.com/install.sh | sh
 | Windows x86_64      | `tagbackup_*_windows_amd64.zip`   |
 
 Extract the archive, make the binary executable, and move it onto your `PATH`. See the [documentation](https://tagbackup.com/docs/) for more detail.
+
+**Upgrading:** on Linux/macOS, re-run the one-liner above. On Windows, download the latest release and replace `tagbackup.exe`. Config and bucket aliases are unchanged.
 
 ---
 
