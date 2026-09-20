@@ -1,9 +1,11 @@
-import { Tag, Trash2, Upload } from "lucide-react";
+import { RefreshCw, Tag, Trash2, Upload } from "lucide-react";
 
 interface Props {
   tags: string[];
   selected: string | null;
   onSelect: (tag: string) => void;
+  refreshDisabled?: boolean;
+  onRefreshClick: () => void;
   uploadActive: boolean;
   onUploadClick: () => void;
   onDeleteClick: () => void;
@@ -13,6 +15,8 @@ export function TagFilters({
   tags,
   selected,
   onSelect,
+  refreshDisabled = false,
+  onRefreshClick,
   uploadActive,
   onUploadClick,
   onDeleteClick,
@@ -36,6 +40,15 @@ export function TagFilters({
         </div>
       )}
       <div className="filterActions">
+        <button
+          type="button"
+          className="btnRefresh"
+          disabled={refreshDisabled}
+          onClick={onRefreshClick}
+        >
+          <RefreshCw size={14} aria-hidden="true" />
+          Refresh
+        </button>
         <button
           type="button"
           className={`btnUpload${uploadActive ? " btnUploadActive" : ""}`}

@@ -45,7 +45,7 @@ $ tagbackup pull --bucket=dbbackup --tag=nightly+prod --latest
 ✓ Downloaded dump.sql
 ```
 
-Run `tagbackup serve` to get a local web UI for browsing, filtering, uploading, and deleting — bound to `127.0.0.1` only.
+Run `tagbackup serve` to get a local web UI for browsing, filtering, uploading, and deleting — bound to `127.0.0.1` only. Use Refresh to re-list the bucket if files change outside the UI.
 
 ---
 

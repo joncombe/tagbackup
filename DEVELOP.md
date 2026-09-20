@@ -34,8 +34,8 @@ make build-go     # go build using the freshly built assets
 Releases are tag-driven — there is no version number in source. Tag the commit you want to release and push it:
 
 ```sh
-git tag v0.0.5
-git push origin v0.0.5
+git tag v0.0.10
+git push origin v0.0.10
 ```
 
 That triggers the GitHub Actions release workflow, which runs GoReleaser to build binaries for all platforms and publish them to [Releases](https://github.com/joncombe/tagbackup/releases).

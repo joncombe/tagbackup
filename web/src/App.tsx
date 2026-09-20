@@ -283,6 +283,8 @@ export function App() {
               tags={tags}
               selected={selectedTag}
               onSelect={selectTag}
+              refreshDisabled={loadingObjects}
+              onRefreshClick={() => void reloadObjects(selected)}
               uploadActive={showDropZone}
               onUploadClick={handleUploadClick}
               onDeleteClick={handleDeleteClick}

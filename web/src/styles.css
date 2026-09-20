@@ -184,6 +184,7 @@ code {
   margin-left: auto;
 }
 
+.btnRefresh,
 .btnUpload,
 .btnDelete,
 .btnPrimary,
@@ -202,6 +203,7 @@ code {
     border-color 0.12s ease;
 }
 
+.btnRefresh,
 .btnUpload,
 .btnDelete {
   display: inline-flex;
@@ -212,15 +214,22 @@ code {
   padding: 5px 12px;
 }
 
+.btnRefresh,
 .btnUpload {
   color: var(--text2);
   background: transparent;
 }
 
+.btnRefresh:hover:not(:disabled),
 .btnUpload:hover,
 .btnUploadActive {
   border-color: var(--accent2);
   color: var(--accent);
+}
+
+.btnRefresh:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .btnDelete,
@@ -483,6 +492,10 @@ code {
     border-color 0.12s ease;
 }
 
+.tagFilter svg {
+  transform: scaleX(-1);
+}
+
 .tagFilter:hover {
   color: var(--text);
   border-color: var(--accent2);
@@ -692,6 +705,10 @@ code {
   padding: 1px 7px;
   text-transform: none;
   letter-spacing: 0;
+}
+
+.tagPill svg {
+  transform: scaleX(-1);
 }
 
 /* Empty / loading / error states */
