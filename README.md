@@ -20,7 +20,7 @@ Upload, download, list, and delete files — identified and filtered by simple t
 
 <div align="center">
 
-[Website](https://tagbackup.com/) · [Documentation](https://tagbackup.com/docs/) · [Guides](https://tagbackup.com/guides/) · [Releases](https://github.com/joncombe/tagbackup/releases) · [Motivation](https://www.joncom.be/projects/tagbackup/)
+[Website](https://tagbackup.com/) · [Documentation](https://tagbackup.com/docs/) · [Guides](https://tagbackup.com/guides/) · [Releases](https://github.com/joncombe/tagbackup/releases) · [Origin story](https://www.joncom.be/projects/tagbackup/)
 
 </div>
 
@@ -115,6 +115,7 @@ See the [documentation](https://tagbackup.com/docs/) for all flags and options.
 | `serve`         | Start a local web UI for visual browsing and management        |
 | `bucket add`    | Configure a new S3-compatible bucket alias                     |
 | `bucket verify` | Test connectivity and permissions against a bucket             |
+| `config path`   | Print the resolved path to the config file                     |
 
 ---
 

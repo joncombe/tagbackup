@@ -42,6 +42,8 @@ Cleanup is best-effort: tagbackup attempts to delete the probe object when the v
 
 - `tagbackup bucket edit` - edit a bucket. The user chooses the bucket from a list and is then shown a form to edit all information for that bucket, including the alias. Do not allow alias collisions.
 
+- `tagbackup config path` - print the resolved config file path (default per-OS location, or the path given by `--config`). Exit successfully even if the file does not exist yet.
+
 Bucket commands are normally interactive. `bucket add` additionally supports a fully-flag-based form for unattended provisioning (described above); the others (`bucket verify`, `bucket delete`, `bucket list`, `bucket edit`) are interactive only.
 
 # Managing files

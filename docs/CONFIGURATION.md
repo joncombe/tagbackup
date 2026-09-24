@@ -17,7 +17,9 @@ for the operating system (via Go's `os.UserConfigDir()`):
 - macOS: `~/Library/Application Support/tagbackup/config.yaml`.
 - Windows: `%AppData%\tagbackup\config.yaml`.
 
-The directory is created on first write if it does not already exist.
+Print the resolved path for this machine with `tagbackup config path`
+(honours `--config` when set). The directory is created on first write if
+it does not already exist.
 
 ## File format
 

@@ -105,7 +105,7 @@ Run `tagbackup --help` or `tagbackup <command> --help` for the exact flag list y
 
 ## Configuration
 
-You need at least one bucket defined in the tagbackup config file before file commands will work. Use `tagbackup bucket add` to create entries interactively, or edit the YAML as described in [CONFIGURATION.md](CONFIGURATION.md). Use `--config=PATH` to point at a specific file; otherwise the default per-OS path is used.
+You need at least one bucket defined in the tagbackup config file before file commands will work. Use `tagbackup bucket add` to create entries interactively, or edit the YAML as described in [CONFIGURATION.md](CONFIGURATION.md). Use `--config=PATH` to point at a specific file; otherwise the default per-OS path is used. Print the resolved path with `tagbackup config path`.
 
 ## Global flags
 
@@ -132,12 +132,27 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup bucket verify` | Check connectivity and list/read/write/delete permissions |
 | `tagbackup bucket edit` | Change a bucket’s settings (including alias) |
 | `tagbackup bucket delete` | Remove a bucket entry from the config (does not delete the remote bucket) |
+| `tagbackup config path` | Print the resolved config file path |
 | `tagbackup push` | Upload one file with tags |
 | `tagbackup pull` | Download one file matching a tag expression |
 | `tagbackup files` | List objects matching a tag expression |
 | `tagbackup tags` | List all tags in the bucket with file counts and date ranges |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
 | `tagbackup serve` | Run a local web UI for browsing, uploading, downloading, and deleting files |
+
+---
+
+## `tagbackup config path`
+
+Prints the resolved path to the config file (one line on stdout). Honours `--config` when set; otherwise prints the default per-OS path. Exits successfully even if the file does not exist yet.
+
+```text
+$ tagbackup config path
+/Users/you/Library/Application Support/tagbackup/config.yaml
+
+$ tagbackup --config=/tmp/tb.yaml config path
+/tmp/tb.yaml
+```
 
 ---
 
