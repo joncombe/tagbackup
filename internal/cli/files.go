@@ -23,24 +23,27 @@ func (g *Runtime) cmdFiles() *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
 		Use:   "files",
-		Short: "List files in the bucket matching a tag expression",
+		Short: "List files in the bucket, optionally filtered by a tag expression",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return g.runFiles(bucket, tagExpr, asJSON)
 		},
 	}
 	cmd.Flags().StringVar(&bucket, "bucket", "", "bucket alias (required)")
-	cmd.Flags().StringVar(&tagExpr, "tag", "", "tag expression (required)")
+	cmd.Flags().StringVar(&tagExpr, "tag", "", "tag expression; omit to list every file")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "output one JSON object per line")
 	_ = cmd.MarkFlagRequired("bucket")
-	_ = cmd.MarkFlagRequired("tag")
 	return cmd
 }
 
 func (g *Runtime) runFiles(bucket, tagExpr string, asJSON bool) error {
 	const name = "files"
-	ev, err := store.ParseTagExpr(tagExpr)
-	if err != nil {
-		return exitUsageErr(name, err)
+	var ev func(map[string]struct{}) bool
+	if tagExpr != "" {
+		var err error
+		ev, err = store.ParseTagExpr(tagExpr)
+		if err != nil {
+			return exitUsageErr(name, err)
+		}
 	}
 	cfg, _, err := config.Load(g.ConfigPath)
 	if err != nil {

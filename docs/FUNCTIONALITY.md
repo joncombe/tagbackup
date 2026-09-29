@@ -87,7 +87,7 @@ Display download progress on a TTY (subject to the global `--quiet` flag, see Gl
 
 When `--output` is not given, the file is downloaded to the current working directory using the original filename. In the case of a name collision the downloaded file overwrites the existing file. The download is written to a temporary file and atomically renamed on success, so an interrupted download never leaves a half-written file in place.
 
-- `tagbackup files --bucket=mybucket --tag=mytag` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below). Human-readable output prints a header row (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) followed by one row per match, sorted newest-first. Pagination behaviour matches the interactive list in `tagbackup pull`.
+- `tagbackup files --bucket=mybucket [--tag=mytag]` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below). `--tag` is optional: when omitted, every file in the bucket that matches the tagbackup naming convention is listed. Human-readable output prints a header row (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) followed by one row per match, sorted newest-first. Pagination behaviour matches the interactive list in `tagbackup pull`.
   - `--json` (optional) - emit machine-readable output to stdout, one JSON object per line with `key`, `tags` (an array of strings), `size` (bytes), and `timestamp` (the 13-digit epoch-ms value embedded in the filename). Disables pagination and any interactive prompts; suitable for scripting.
 
 This command is non-interactive.
@@ -202,7 +202,7 @@ Network and S3 calls use the AWS SDK's default retry behaviour (currently up to 
 
 ## Bucket scanning
 
-Every command that operates on existing files (`pull`, `files`, `delete`) issues `ListObjectsV2` calls against the bucket, scoped to the configured `prefix:` (or the whole bucket if no prefix is set). The AWS SDK paginator returns objects 1000 at a time; tagbackup iterates until the bucket is exhausted, parses each key against the `<timestamp>-<tags>-<filename>` format (silently skipping non-conforming keys, or logging each at DEBUG when `--verbose` is set), evaluates the supplied tag expression, and buffers the matched set in memory. For `pull --latest` only the maximum-by-timestamp match is retained. Per-match memory cost is a few hundred bytes (key, parsed tags, size, timestamp), so even buckets with hundreds of thousands of matches are comfortably handled.
+Every command that operates on existing files (`pull`, `files`, `delete`) issues `ListObjectsV2` calls against the bucket, scoped to the configured `prefix:` (or the whole bucket if no prefix is set). The AWS SDK paginator returns objects 1000 at a time; tagbackup iterates until the bucket is exhausted, parses each key against the `<timestamp>-<tags>-<filename>` format (silently skipping non-conforming keys, or logging each at DEBUG when `--verbose` is set), evaluates the supplied tag expression (for `files` without `--tag`, every parsed object is kept), and buffers the matched set in memory. For `pull --latest` only the maximum-by-timestamp match is retained. Per-match memory cost is a few hundred bytes (key, parsed tags, size, timestamp), so even buckets with hundreds of thousands of matches are comfortably handled.
 
 ## Display pagination
 
@@ -218,7 +218,7 @@ Global flags (`--config`, `--verbose`, `--quiet`, `--non-interactive`, `--no-col
 
 # Tag grammar
 
-When using the `tagbackup pull`, `tagbackup files` and `tagbackup delete` commands, the user can make rules with one or more tags:
+When using the `tagbackup pull`, `tagbackup files` and `tagbackup delete` commands, the user can make rules with one or more tags (the expression is optional for `files` only):
 
 - `|` = OR, `+` = AND, `-` = NOT (unary), `()` = grouping.
 - Precedence `()` > `-` > `+` > `|`
@@ -259,7 +259,7 @@ All error messages are formatted as `tagbackup: <command>: <message>` on stderr,
 The following conditions are explicitly surfaced as friendly errors:
 
 - the syntax of a command is invalid (exit code 2)
-- required parameters are missing, e.g. `--bucket` or `--tag` with `pull`, `push`, `files` or `delete` (exit code 2)
+- required parameters are missing, e.g. `--bucket` with `pull`, `push`, `files` or `delete`, or `--tag` with `pull`, `push` or `delete` (exit code 2)
 - the tag expression is malformed under the [Tag grammar](#tag-grammar) rules (exit code 2)
 - the configuration file is missing, unreadable, or names an unknown bucket alias (exit code 3)
 - the bucket credentials do not work (exit code 4)

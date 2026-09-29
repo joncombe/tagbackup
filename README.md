@@ -109,7 +109,7 @@ See the [documentation](https://tagbackup.com/docs/) for all flags and options.
 | --------------- | -------------------------------------------------------------- |
 | `push`          | Upload a file with one or more tags                            |
 | `pull`          | Download the latest (or chosen) file matching a tag expression |
-| `files`         | List all objects matching a tag expression                     |
+| `files`         | List objects, optionally filtered by a tag expression          |
 | `tags`          | List all tags in use across a bucket with counts and dates     |
 | `delete`        | Delete objects by tag, with `--older-than` for retention       |
 | `serve`         | Start a local web UI for visual browsing and management        |
@@ -133,7 +133,7 @@ See the [documentation](https://tagbackup.com/docs/) for all flags and options.
 
 ## Tag Expressions
 
-Used with `pull`, `files`, and `delete` via the `--tag` flag.
+Used with `pull`, `files`, and `delete` via the `--tag` flag (optional for `files`: omit it to list every file).
 
 | Token  | Meaning                        |
 | ------ | ------------------------------ |

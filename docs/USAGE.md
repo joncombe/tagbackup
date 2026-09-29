@@ -135,7 +135,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 | `tagbackup config path` | Print the resolved config file path |
 | `tagbackup push` | Upload one file with tags |
 | `tagbackup pull` | Download one file matching a tag expression |
-| `tagbackup files` | List objects matching a tag expression |
+| `tagbackup files` | List objects in a bucket, optionally filtered by a tag expression |
 | `tagbackup tags` | List all tags in the bucket with file counts and date ranges |
 | `tagbackup delete` | Delete objects matching a tag expression (and optional age filter) |
 | `tagbackup serve` | Run a local web UI for browsing, uploading, downloading, and deleting files |
@@ -248,8 +248,15 @@ Example interactive chooser (headers on stderr, above the prompt):
 ## `tagbackup files`
 
 ```text
-tagbackup files --bucket=ALIAS --tag=EXPRESSION [--json]
+tagbackup files --bucket=ALIAS [--tag=EXPRESSION] [--json]
 ```
+
+- `--tag` (optional) is a [tag expression](#tag-expressions). Omit it to list every file in the bucket:
+
+  ```text
+  tagbackup files --bucket=dbbackup               # every file
+  tagbackup files --bucket=dbbackup --tag=prod    # only files tagged prod
+  ```
 
 - `--json`: one JSON object per line on stdout with `key`, `tags`, `size`, `timestamp` (epoch ms from the key). No header row; no paging; suitable for scripts.
 
@@ -347,7 +354,7 @@ The web UI is embedded in the binary; there is nothing extra to install or run s
 
 ## Tag expressions
 
-Used with `pull`, `files`, and `delete` for `--tag`:
+Used with `pull`, `files`, and `delete` for `--tag` (required for `pull` and `delete`, optional for `files`):
 
 | Token | Meaning |
 | ----- | ------- |
