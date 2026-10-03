@@ -18,7 +18,7 @@ for the operating system (via Go's `os.UserConfigDir()`):
 - Windows: `%AppData%\tagbackup\config.yaml`.
 
 Print the resolved path for this machine with `tagbackup config path`
-(honours `--config` when set). The directory is created on first write if
+(honors `--config` when set). The directory is created on first write if
 it does not already exist.
 
 ## File format
@@ -81,7 +81,7 @@ Fields per bucket:
   supports any S3-compatible provider, not just AWS. The endpoint should be
   the **account root** (e.g. `https://<account>.r2.cloudflarestorage.com` for
   Cloudflare R2, `https://s3.eu-west-1.amazonaws.com` for AWS, or
-  `http://127.0.0.1:9000` for a local MinIO). tagbackup normalises the
+  `http://127.0.0.1:9000` for a local MinIO). tagbackup normalizes the
   endpoint at runtime: if the path of the URL is exactly `/<bucket>` matching
   the configured `bucket` value, the path is stripped before the URL is
   passed to the SDK. This is a convenience for providers whose console UIs
@@ -147,10 +147,10 @@ This order means a cautious operator can keep `config.yaml` free of secrets
 and inject them via the environment or an attached IAM role, while a casual
 user gets the simple "everything is in one file" experience.
 
-## Default behaviour of `bucket add`
+## Default behavior of `bucket add`
 
 `tagbackup bucket add` stores static access keys inline in `config.yaml` by
-default, matching the behaviour of `aws configure` writing to
+default, matching the behavior of `aws configure` writing to
 `~/.aws/credentials`. Users who want one of the other resolution paths can
 edit `config.yaml` after the fact, or set the relevant environment variables.
 

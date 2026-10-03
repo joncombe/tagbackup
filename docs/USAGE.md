@@ -1,6 +1,6 @@
 # tagbackup — user guide (usage)
 
-This document starts with **installing a prebuilt binary from GitHub Releases**, then covers **command-line usage**: flags, tag expressions, and behaviour. It does **not** cover compiling from source (use the [README](../README.md) for that). For the configuration file, credentials, and file paths, see [CONFIGURATION.md](CONFIGURATION.md).
+This document starts with **installing a prebuilt binary from GitHub Releases**, then covers **command-line usage**: flags, tag expressions, and behavior. It does **not** cover compiling from source (use the [README](../README.md) for that). For the configuration file, credentials, and file paths, see [CONFIGURATION.md](CONFIGURATION.md).
 
 ## Install from GitHub Releases
 
@@ -117,7 +117,7 @@ These apply to every subcommand:
 | `--verbose` | `-v` | More diagnostic output (credentials path, SDK retries, skipped keys) |
 | `--quiet` | `-q` | Less operational output; errors still print. Mutually exclusive with `--verbose`. |
 | `--non-interactive` | | Exit with a usage error instead of prompting (for scripts) |
-| `--no-color` | | Disable colour (also when stderr is not a TTY, or if `NO_COLOR` is set) |
+| `--no-color` | | Disable color (also when stderr is not a TTY, or if `NO_COLOR` is set) |
 | `--version` | | Print version and exit |
 | `--help` | `-h` | Help for the current command |
 
@@ -144,7 +144,7 @@ There is **no** default bucket: `--bucket` is **required** for `push`, `pull`, `
 
 ## `tagbackup config path`
 
-Prints the resolved path to the config file (one line on stdout). Honours `--config` when set; otherwise prints the default per-OS path. Exits successfully even if the file does not exist yet.
+Prints the resolved path to the config file (one line on stdout). Honors `--config` when set; otherwise prints the default per-OS path. Exits successfully even if the file does not exist yet.
 
 ```text
 $ tagbackup config path
@@ -327,7 +327,7 @@ Starts a small local web server that hosts a browser for your buckets, then open
 | `--port=PORT` | `3000` | Port to listen on (1–65535). Exits with a usage error if out of range, or an error if the port is already in use. |
 | `--no-open` | off | Do not open a browser automatically; just print the URL. |
 
-Behaviour:
+Behavior:
 
 - The server binds to **`127.0.0.1` only** — it is never exposed on your network. Even so, treat it as you would any local tool that can read and write your bucket.
 - The header shows the tagbackup wordmark only; the footer shows the running binary version and a link to tagbackup.com.
@@ -394,7 +394,7 @@ There are no wildcards or regex; only the operators above.
 | 5 | No matching objects (when that is the outcome) |
 | 130 / 143 | SIGINT / SIGTERM |
 
-See [FUNCTIONALITY.md](FUNCTIONALITY.md#global-behaviour) for TTY handling, signal behaviour, retries, and pagination details.
+See [FUNCTIONALITY.md](FUNCTIONALITY.md#global-behavior) for TTY handling, signal behavior, retries, and pagination details.
 
 ## Examples
 

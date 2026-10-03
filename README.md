@@ -121,7 +121,7 @@ See the [documentation](https://tagbackup.com/docs/) for all flags and options.
 
 ## Features
 
-- **Tag-based organisation** — tags are embedded in the S3 object key; filter with `AND` / `OR` / `NOT` expressions, no external index needed.
+- **Tag-based organization** — tags are embedded in the S3 object key; filter with `AND` / `OR` / `NOT` expressions, no external index needed.
 - **Any S3-compatible store** — works with AWS S3, Cloudflare R2, MinIO, Backblaze B2, and any provider that speaks the S3 API.
 - **Local web UI** — run `tagbackup serve` to browse and manage buckets from your browser; binds to `127.0.0.1` only.
 - **Scriptable** — non-interactive mode, JSON output (`--json`), and meaningful exit codes make it easy to use in cron jobs and shell scripts.

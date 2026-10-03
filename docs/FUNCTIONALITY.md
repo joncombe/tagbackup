@@ -67,9 +67,9 @@ When reading from stdin, the upload progress is shown as a bytes-transferred cou
 
 **Filename and key length limits.** The original filename (the basename of the path supplied on the command line, or the value of `--filename` when reading from stdin) must be at most 255 bytes, matching POSIX `NAME_MAX`. The full assembled S3 key (`<prefix><timestamp>-<tags>-<filename>`) must be at most 1024 bytes, the S3 key limit. Push refuses to upload and exits with a usage error (exit code 2) if either limit would be exceeded.
 
-**Sub-millisecond collisions.** The timestamp is millisecond-precision. Two pushes from the same machine in the same millisecond produce the same key, and the second push will overwrite the first. This is a deliberate trade-off in favour of a simple, parseable filename format; in practice push is invoked from human commands or cron tasks separated by seconds, not from tight loops, so collisions are not expected to occur.
+**Sub-millisecond collisions.** The timestamp is millisecond-precision. Two pushes from the same machine in the same millisecond produce the same key, and the second push will overwrite the first. This is a deliberate trade-off in favor of a simple, parseable filename format; in practice push is invoked from human commands or cron tasks separated by seconds, not from tight loops, so collisions are not expected to occur.
 
-Display upload progress on a TTY (subject to the global `--quiet` flag, see Global behaviour). Success is indicated by exit code 0; failures print an error to stderr. This command is non-interactive.
+Display upload progress on a TTY (subject to the global `--quiet` flag, see Global behavior). Success is indicated by exit code 0; failures print an error to stderr. This command is non-interactive.
 
 - `tagbackup pull --bucket=mybucket --tag=mytag --latest` - download a file from the specified bucket alias matching this tag if it exists. --bucket and --tag are required parameters. There are a few caveats here:
   - `--bucket` (required)
@@ -83,11 +83,11 @@ Display upload progress on a TTY (subject to the global `--quiet` flag, see Glob
   - `--output=PATH` (optional)
     - write the downloaded file to `PATH` instead of the current working directory. Pass `-` to write the file body to standard output. Example: `tagbackup pull --bucket=db --tag=maindb --latest --output=- | psql mydb`. If `PATH` is an existing directory, or ends with a path separator, the file is written inside that directory under the object's display name. Parent directories are created as needed.
 
-Display download progress on a TTY (subject to the global `--quiet` flag, see Global behaviour). Success is indicated by exit code 0; failures print an error to stderr. When `--output=-` is used, progress output is forced to stderr so it does not contaminate the piped file body. This command is non-interactive only with the inclusion of the --latest flag.
+Display download progress on a TTY (subject to the global `--quiet` flag, see Global behavior). Success is indicated by exit code 0; failures print an error to stderr. When `--output=-` is used, progress output is forced to stderr so it does not contaminate the piped file body. This command is non-interactive only with the inclusion of the --latest flag.
 
 When `--output` is not given, the file is downloaded to the current working directory using the original filename. In the case of a name collision the downloaded file overwrites the existing file. The download is written to a temporary file and atomically renamed on success, so an interrupted download never leaves a half-written file in place.
 
-- `tagbackup files --bucket=mybucket [--tag=mytag]` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below). `--tag` is optional: when omitted, every file in the bucket that matches the tagbackup naming convention is listed. Human-readable output prints a header row (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) followed by one row per match, sorted newest-first. Pagination behaviour matches the interactive list in `tagbackup pull`.
+- `tagbackup files --bucket=mybucket [--tag=mytag]` - list all the files in the bucket matching the specified bucket and tag(s). Use the tag grammar rules (see below). `--tag` is optional: when omitted, every file in the bucket that matches the tagbackup naming convention is listed. Human-readable output prints a header row (`TIMESTAMP`, `SIZE`, `FILENAME`, `TAGS`) followed by one row per match, sorted newest-first. Pagination behavior matches the interactive list in `tagbackup pull`.
   - `--json` (optional) - emit machine-readable output to stdout, one JSON object per line with `key`, `tags` (an array of strings), `size` (bytes), and `timestamp` (the 13-digit epoch-ms value embedded in the filename). Disables pagination and any interactive prompts; suitable for scripting.
 
 This command is non-interactive.
@@ -108,7 +108,7 @@ Tags are sorted alphabetically. Output is tabular, non-interactive, and always g
   - `--older-than` - the same as `--newer-than` but deletes files older than the provided value, with the same strictly-greater-than boundary.
   - the user can only use one of `--newer-than` or `--older-than`, not both.
 
-Display a list of the deleted files and a success or fail message on completion (subject to the global `--quiet` flag, see Global behaviour). This command is non-interactive only with the inclusion of the `--force` flag.
+Display a list of the deleted files and a success or fail message on completion (subject to the global `--quiet` flag, see Global behavior). This command is non-interactive only with the inclusion of the `--force` flag.
 
 # Web UI (`tagbackup serve`)
 
@@ -122,7 +122,7 @@ The UI is embedded in the binary via `//go:embed` from `internal/server/dist`; n
 
 **Upload.** An Upload button reveals a drag-and-drop area (or file picker). After selecting one or more files, a dialog lets the user toggle existing bucket tags and/or enter new tags. The same tag set is applied to every file in the batch. Tags follow the same `[a-zA-Z0-9]` rules as `push`; at least one valid tag is required. Original filenames are taken from the filesystem (no renaming). Uploads run one file at a time with a progress indicator; per-file failures are ignored silently. On completion the file list refreshes.
 
-**Download.** Each row in the file table has a download button. Clicking it fetches the object via the download API and saves it under the original filename (browser download behaviour). There is no tag-expression or "latest" picker — the user downloads the specific object shown in the row.
+**Download.** Each row in the file table has a download button. Clicking it fetches the object via the download API and saves it under the original filename (browser download behavior). There is no tag-expression or "latest" picker — the user downloads the specific object shown in the row.
 
 **Delete.** Checkboxes beside each row and a header select-all toggle apply to the current page only (50 files per page). If Delete is clicked with no files checked, a hint dialog explains that the user must select files first. When at least one file is checked, a confirmation dialog shows the count; after confirmation, deletions run one object at a time with a progress indicator. Per-file failures are ignored silently. On completion the file list refreshes.
 
@@ -147,7 +147,7 @@ Bucket configuration JSON shape (`GET /api/buckets/{alias}`): `alias`, `bucket`,
 
 Stop the server with Ctrl+C. This command is non-interactive.
 
-# Global behaviour
+# Global behavior
 
 The flags and conventions in this section apply to every command unless explicitly overridden.
 
@@ -159,7 +159,7 @@ These flags can be passed to any command:
 - `--verbose` (`-v`) - print extra diagnostic output to stderr (e.g. SDK retry attempts, skipped non-conforming objects in the bucket).
 - `--quiet` (`-q`) - suppress non-essential output. Errors and the final exit code are unaffected. `--verbose` and `--quiet` are mutually exclusive.
 - `--non-interactive` - refuse to prompt for input. If a command would normally need to prompt, it exits with a usage error instead. Recommended for cron jobs and other unattended use.
-- `--no-color` - disable ANSI colour codes in output. Colour is also disabled automatically when stdout is not a TTY, or when the `NO_COLOR` environment variable is set.
+- `--no-color` - disable ANSI color codes in output. Color is also disabled automatically when stdout is not a TTY, or when the `NO_COLOR` environment variable is set.
 - `--version` - print the tagbackup version and exit.
 - `--help` (`-h`) - print help for the current command and exit.
 
@@ -185,7 +185,7 @@ There is no default bucket. The `--bucket` flag is required for every file comma
 
 ## TTY detection
 
-Interactive features (colour codes, progress bars, the survey-style prompts in `bucket add`/`bucket edit`/`pull` without `--latest`) are auto-disabled when the relevant stream is not a TTY: colour and progress bars are disabled when stderr is not a TTY, and prompts are refused when stdin is not a TTY. This means cron logs do not fill with escape sequences and spinner garbage. The `NO_COLOR` environment variable also disables colour.
+Interactive features (color codes, progress bars, the survey-style prompts in `bucket add`/`bucket edit`/`pull` without `--latest`) are auto-disabled when the relevant stream is not a TTY: color and progress bars are disabled when stderr is not a TTY, and prompts are refused when stdin is not a TTY. This means cron logs do not fill with escape sequences and spinner garbage. The `NO_COLOR` environment variable also disables color.
 
 ## Signal handling
 
@@ -198,7 +198,7 @@ tagbackup installs a handler for SIGINT (Ctrl-C) and SIGTERM. On receipt:
 
 ## Retry policy
 
-Network and S3 calls use the AWS SDK's default retry behaviour (currently up to three attempts per request with exponential backoff and jitter). This applies to listing, uploading (per multipart part), downloading, and deletion. tagbackup does not add its own retry layer on top. With `--verbose`, each retry attempt is logged to stderr.
+Network and S3 calls use the AWS SDK's default retry behavior (currently up to three attempts per request with exponential backoff and jitter). This applies to listing, uploading (per multipart part), downloading, and deletion. tagbackup does not add its own retry layer on top. With `--verbose`, each retry attempt is logged to stderr.
 
 ## Bucket scanning
 
@@ -214,7 +214,7 @@ tagbackup uses the standard library's [`log/slog`](https://pkg.go.dev/log/slog) 
 
 ## Configuration sources
 
-Global flags (`--config`, `--verbose`, `--quiet`, `--non-interactive`, `--no-color`, `--version`, `--help`) and command-specific flags are flag-only; tagbackup does not honour environment variables for them. Environment variables are reserved for credentials, as described in [CONFIGURATION.md](CONFIGURATION.md). This keeps the precedence rules predictable and avoids surprising overrides at runtime.
+Global flags (`--config`, `--verbose`, `--quiet`, `--non-interactive`, `--no-color`, `--version`, `--help`) and command-specific flags are flag-only; tagbackup does not honor environment variables for them. Environment variables are reserved for credentials, as described in [CONFIGURATION.md](CONFIGURATION.md). This keeps the precedence rules predictable and avoids surprising overrides at runtime.
 
 # Tag grammar
 
@@ -254,7 +254,7 @@ v1 supports only the operators listed above. There are no wildcards, no regex, a
 
 # Handling errors
 
-All error messages are formatted as `tagbackup: <command>: <message>` on stderr, optionally followed by a `Hint: ...` line offering concrete remediation advice. The process then exits with the appropriate code from the [Exit codes](#exit-codes) table in Global behaviour. tagbackup never prints stack traces or unwrapped Go error strings to the user.
+All error messages are formatted as `tagbackup: <command>: <message>` on stderr, optionally followed by a `Hint: ...` line offering concrete remediation advice. The process then exits with the appropriate code from the [Exit codes](#exit-codes) table in Global behavior. tagbackup never prints stack traces or unwrapped Go error strings to the user.
 
 The following conditions are explicitly surfaced as friendly errors:
 

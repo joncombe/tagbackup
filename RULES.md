@@ -12,12 +12,12 @@ There is no always-on server — only the CLI (and an optional local web UI via
 
 ## Specification (authoritative)
 
-Treat these documents as the source of truth for behaviour. Align code with
-them and update them when behaviour changes:
+Treat these documents as the source of truth for behavior. Align code with
+them and update them when behavior changes:
 
 - @docs/OVERVIEW.md — project description, tech stack, repo layout, CLI
   convention (top-level verbs vs. `noun verb` subcommands), non-goals.
-- @docs/FUNCTIONALITY.md — every command's exact behaviour, flags, exit
+- @docs/FUNCTIONALITY.md — every command's exact behavior, flags, exit
   codes, output channels, signal handling, tag grammar.
 - @docs/CONFIGURATION.md — YAML layout, file location, atomic save, 0600
   permissions, credential resolution order (env → profile → inline → default
@@ -50,10 +50,10 @@ them and update them when behaviour changes:
   `exitc.Usage` (2).
 - **Output channels:** stdout is data only (file body, listings, JSON);
   stderr carries progress, logs, prompts, hints, errors.
-- **TTY-aware:** colour and progress bars only on a TTY (`StderrIsTTY`);
+- **TTY-aware:** color and progress bars only on a TTY (`StderrIsTTY`);
   prompts refused when stdin is not a TTY (`StdinIsTTY`); `--quiet`
   suppresses non-essential stderr output (including progress bars);
-  `--no-color` or `NO_COLOR` disables colour.
+  `--no-color` or `NO_COLOR` disables color.
 - **Non-interactive mode:** `--non-interactive` must never prompt; a command
   that would need to prompt exits with `exitc.Usage` and a clear message.
 - **S3 layer:** go through `store.ObjectStore` so tests can use `store.Mem`.
@@ -68,6 +68,6 @@ them and update them when behaviour changes:
 - Follow https://go.dev/doc/effective_go — readable over clever.
 - No narrating comments (`// increment i`). Comment only non-obvious intent.
 - Prefer small helpers over duplicated logic (tag validation, `Exit`
-  construction, ANSI colour wrappers).
-- Every new behaviour needs at least one test; favour `store.Mem` for
+  construction, ANSI color wrappers).
+- Every new behavior needs at least one test; favor `store.Mem` for
   command-level tests.
