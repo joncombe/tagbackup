@@ -10,4 +10,5 @@ tagbackup
 # Frontend dev dependencies
 /web/node_modules/
 
+dependabot.json
 .DS_Store
