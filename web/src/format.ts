@@ -34,15 +34,19 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 
 const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 
-/** relativeTime renders e.g. "6 hours ago" relative to now. */
+/**
+ * relativeTime renders e.g. "6 hours ago" relative to now. Anything under a
+ * minute old is "a few seconds ago". Timestamps in the future (clock skew
+ * between the pushing host and this browser) are treated as just now, since a
+ * backup cannot have happened in the future.
+ */
 export function relativeTime(ms: number, now: number = Date.now()): string {
-  const diff = ms - now;
-  const abs = Math.abs(diff);
+  const age = now - ms;
+  if (age < 60_000) return "a few seconds ago";
   for (const [unit, unitMs] of UNITS) {
-    if (abs >= unitMs || unit === "second") {
-      const value = Math.round(diff / unitMs);
-      return rtf.format(value, unit);
+    if (age >= unitMs) {
+      return rtf.format(-Math.floor(age / unitMs), unit);
     }
   }
-  return rtf.format(0, "second");
+  return "a few seconds ago";
 }

@@ -45,8 +45,9 @@ export function App() {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [appVersion, setAppVersion] = useState<string | null>(null);
 
-  // A single "now" snapshot keeps relative times stable across a render and
-  // refreshes them every minute.
+  // A single "now" snapshot keeps relative times stable across a render. It
+  // refreshes every minute and whenever objects are (re)loaded, so freshly
+  // pushed files are never newer than "now".
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 60_000);
@@ -78,6 +79,7 @@ export function App() {
     try {
       const list = await fetchObjects(alias);
       setObjects(list);
+      setNow(Date.now());
     } catch (e: unknown) {
       setObjectsError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -100,7 +102,10 @@ export function App() {
     setShowDeleteHintModal(false);
     fetchObjects(selected)
       .then((list) => {
-        if (!cancelled) setObjects(list);
+        if (!cancelled) {
+          setObjects(list);
+          setNow(Date.now());
+        }
       })
       .catch((e: unknown) => {
         if (!cancelled)
